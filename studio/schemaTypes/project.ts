@@ -114,6 +114,13 @@ export const project = defineType({
       type: 'number',
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: 'hidden',
+      title: 'Hidden',
+      description: 'On: keeps the project in Sanity but hides it from the projects grid (the page itself stays reachable by direct link). Off (default): visible.',
+      type: 'boolean',
+      initialValue: false,
+    }),
   ],
   preview: {
     select: {title: 'title', subtitle: 'category', media: 'cover'},

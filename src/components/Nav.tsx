@@ -8,21 +8,24 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
   const onLab = pathname === "/lab";
   const onHome = pathname === "/";
 
-  const handleProjectsClick: MouseEventHandler<HTMLAnchorElement> = (e) => {
+  const scrollToId = (id: string, e: Parameters<MouseEventHandler<HTMLAnchorElement>>[0]) => {
     if (onHome) {
       e.preventDefault();
-      const el = document.getElementById("work");
+      const el = document.getElementById(id);
       if (el) {
         const y = el.getBoundingClientRect().top + window.scrollY - 20;
         window.scrollTo({ top: y, behavior: "smooth" });
       }
     } else {
       // Not on the home page: navigate there and let Index.tsx's own
-      // hash effect scroll to #work once the section has mounted.
+      // hash effect scroll to the section once it has mounted.
       e.preventDefault();
-      navigate("/#work");
+      navigate(`/#${id}`);
     }
   };
+
+  const handleProjectsClick: MouseEventHandler<HTMLAnchorElement> = (e) => scrollToId("work", e);
+  const handleLabClick: MouseEventHandler<HTMLAnchorElement> = (e) => scrollToId("lab", e);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-[200] px-6 md:px-8 pt-7 animate-slide-down mix-blend-difference text-white">
@@ -32,13 +35,11 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
             to="/"
             className="text-[13.5px] font-medium leading-[1.45] tracking-[0.01em]"
           >
-            Buen Puerto
+            Jose Peláez
           </Link>
-          {subtitle && (
-            <span className="text-[12px] font-light leading-[1.3] text-white/50 tracking-[0.01em]">
-              {subtitle}
-            </span>
-          )}
+          <span className="text-[12px] font-light leading-[1.3] text-white/50 tracking-[0.01em]">
+            {subtitle ?? "Buen Puerto Studio"}
+          </span>
         </div>
         <div className="flex items-center gap-6">
           <Link
@@ -46,10 +47,11 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
             onClick={handleProjectsClick}
             className="text-[13px] font-light text-white/70 tracking-[0.01em] transition-colors duration-300 hover:text-white"
           >
-            Proyectos
+            Work
           </Link>
           <Link
-            to="/lab"
+            to="/#lab"
+            onClick={handleLabClick}
             className={`text-[13px] tracking-[0.01em] transition-colors duration-300 hover:text-white ${
               onLab ? "font-medium text-white" : "font-light text-white/70"
             }`}
@@ -61,7 +63,7 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
               onClick={() => setShowContact(!showContact)}
               className="text-[13px] font-light text-white/70 tracking-[0.01em] transition-colors duration-300 hover:text-white"
             >
-              Contacto
+              Contact
             </button>
             {showContact && (
               <div

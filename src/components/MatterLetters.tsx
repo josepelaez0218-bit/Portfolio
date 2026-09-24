@@ -67,7 +67,7 @@ const MatterLetters = () => {
       const slopeStartX = -width * 0.16;
       slopeStartY = isMobile ? height * 0.12 : height * 0.34;
       const slopeEndX = width * 1.18;
-      const slopeEndY = isMobile ? safeFloorY - 6 : height * 0.72;
+      const slopeEndY = isMobile ? safeFloorY - 6 : height * 0.9;
       const slopeDx = slopeEndX - slopeStartX;
       const slopeDy = slopeEndY - slopeStartY;
       const slopeAngle = Math.atan2(slopeDy, slopeDx);
@@ -194,6 +194,15 @@ const MatterLetters = () => {
 
     // Mouse drag
     const mouse = Mouse.create(render.canvas);
+    // Matter's Mouse module calls preventDefault() on wheel events by
+    // default, to stop the page scrolling/zooming while dragging a body —
+    // which also blocks normal page scroll the whole time the cursor is
+    // over the canvas. Drop just the wheel listeners; drag interaction
+    // (mousedown/mousemove/mouseup) is untouched.
+    const mousewheelHandler = (mouse as unknown as { mousewheel: EventListener }).mousewheel;
+    mouse.element.removeEventListener("wheel", mousewheelHandler);
+    mouse.element.removeEventListener("mousewheel", mousewheelHandler);
+    mouse.element.removeEventListener("DOMMouseScroll", mousewheelHandler);
     const mouseConstraint = MouseConstraint.create(engine, {
       mouse,
       constraint: { stiffness: 0.6, render: { visible: false } },

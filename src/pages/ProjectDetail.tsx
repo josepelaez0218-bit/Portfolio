@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import CustomCursor from "@/components/CustomCursor";
+import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
 import { fetchProjectBySlug } from "@/lib/sanity/queries";
 import { urlForImage } from "@/lib/sanity/image";
@@ -95,22 +96,22 @@ const ProjectDetail = () => {
     headline: project.title,
     description: project.description,
     image: ogImageUrl,
-    author: { "@type": "Organization", name: "Buen Puerto" },
+    author: { "@type": "Organization", name: "Jose Peláez", alternateName: "Buen Puerto" },
     url,
   };
 
   return (
     <>
       <Helmet>
-        <title>{`${project.title} — Buen Puerto`}</title>
+        <title>{`${project.title} — Jose Peláez`}</title>
         <meta name="description" content={project.description} />
         <link rel="canonical" href={url} />
         <meta property="og:type" content="article" />
-        <meta property="og:title" content={`${project.title} — Buen Puerto`} />
+        <meta property="og:title" content={`${project.title} — Jose Peláez`} />
         <meta property="og:description" content={project.description} />
         <meta property="og:url" content={url} />
         <meta property="og:image" content={ogImageUrl} />
-        <meta name="twitter:title" content={`${project.title} — Buen Puerto`} />
+        <meta name="twitter:title" content={`${project.title} — Jose Peláez`} />
         <meta name="twitter:description" content={project.description} />
         <meta name="twitter:image" content={ogImageUrl} />
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
@@ -221,7 +222,7 @@ const ProjectDetail = () => {
                     to="/"
                     className="text-[14px] font-light text-foreground/60 tracking-[0.01em] transition-colors duration-300 hover:text-foreground"
                   >
-                    Volver
+                    Back
                   </Link>
                 </div>
               </nav>
@@ -281,10 +282,20 @@ const ProjectDetail = () => {
                       ))}
                     </div>
                     {(() => {
+                      const hasImages = Boolean(s.images && s.images.length > 0);
+                      const hasVideo = Boolean(s.videoUrl);
+                      const isVideoFirst = s.mediaOrder === "video-first";
+                      // First media block after the body text gets the larger
+                      // gap; a second block stacked on top of the first one
+                      // uses the same small gap the images grid uses between
+                      // its own items, so spacing reads as one consistent
+                      // rhythm instead of jumping between 16px and 40px.
+                      const imagesMargin = isVideoFirst && hasVideo ? "mt-4" : "mt-10";
+                      const videoMargin = !isVideoFirst && hasImages ? "mt-4" : "mt-10";
                       const imagesBlock = s.images && s.images.length > 0 && (
                         <div
                           key="images"
-                          className={`mt-10 grid gap-4 ${
+                          className={`${imagesMargin} grid gap-4 ${
                             s.imagesLayout === "stacked"
                               ? "grid-cols-1"
                               : s.imagesLayout === "grid-3"
@@ -307,7 +318,7 @@ const ProjectDetail = () => {
                         </div>
                       );
                       const videoBlock = s.videoUrl && (
-                        <div key="video" className="mt-10 overflow-hidden rounded-[4px]">
+                        <div key="video" className={`${videoMargin} overflow-hidden rounded-[4px]`}>
                           <video
                             src={s.videoUrl}
                             autoPlay

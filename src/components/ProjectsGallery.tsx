@@ -79,7 +79,7 @@ const ProjectsGallery = () => {
   return (
     <section
       id="work"
-      className="relative z-10 -mt-8 md:-mt-14 w-full rounded-t-[28px] md:rounded-t-[40px] bg-background px-6 md:px-8 pt-16 pb-24 md:pt-24 md:pb-32"
+      className="relative z-10 -mt-8 md:-mt-14 w-full bg-background px-6 md:px-8 pt-16 pb-24 md:pt-24 md:pb-32"
     >
       <div className="max-w-[1400px] mx-auto">
         {!loading && projects.length === 0 ? (

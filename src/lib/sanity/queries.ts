@@ -1,5 +1,5 @@
 import { sanityClient } from "./client";
-import type { SanityProject } from "./types";
+import type { SanityAbout, SanityLabItem, SanityProject } from "./types";
 
 const PROJECT_FIELDS = /* groq */ `
   _id,
@@ -31,11 +31,21 @@ const PROJECT_FIELDS = /* groq */ `
 
 export const fetchProjects = () =>
   sanityClient.fetch<SanityProject[]>(
-    `*[_type == "project"] | order(order asc) { ${PROJECT_FIELDS} }`,
+    `*[_type == "project" && hidden != true] | order(order asc) { ${PROJECT_FIELDS} }`,
   );
 
 export const fetchProjectBySlug = (slug: string) =>
   sanityClient.fetch<SanityProject | null>(
     `*[_type == "project" && slug.current == $slug][0] { ${PROJECT_FIELDS} }`,
     { slug },
+  );
+
+export const fetchAbout = () =>
+  sanityClient.fetch<SanityAbout | null>(
+    `*[_type == "about"][0] { photo, bio, services, location }`,
+  );
+
+export const fetchLabItems = () =>
+  sanityClient.fetch<SanityLabItem[]>(
+    `*[_type == "labItem"] | order(order asc) { _id, image, alt, caption }`,
   );

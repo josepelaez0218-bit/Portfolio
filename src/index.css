@@ -90,7 +90,12 @@
   z-index: 9999;
   width: 7px;
   height: 7px;
-  background: hsl(var(--foreground));
+  /* Fixed white + difference blend inverts against whatever is underneath
+     (light or dark), so it stays visible regardless of any locally-scoped
+     --foreground override (e.g. the Lab section's dark theme). Reading the
+     CSS variable here instead would just resolve to the global value at
+     this element's position in the tree, which breaks that trick. */
+  background: #fff;
   border-radius: 50%;
   pointer-events: none;
   transform: translate(-50%, -50%);
@@ -104,10 +109,11 @@
   z-index: 9998;
   width: 32px;
   height: 32px;
-  border: 1px solid hsl(var(--foreground) / 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 50%;
   pointer-events: none;
   transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
   opacity: 1;
   transition: opacity 0.15s var(--ease-out);
 }
