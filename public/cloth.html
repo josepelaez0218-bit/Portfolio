@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cloth — Optimized</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: #fafafa;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        position: fixed;
+        inset: 0;
+        cursor: crosshair;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <script>
+      (function () {
+        "use strict";
+
+        /* ═══════════════════════════════════════════════════════════
+   DEVICE DETECTION — adaptive quality per platform
+═══════════════════════════════════════════════════════════ */
+        const isMobile =
+          /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
+          window.innerWidth < 768;
+
+        const DPR = Math.min(
+          window.devicePixelRatio || 1,
+          isMobile ? 1.2 : 1.5,
+        );
+
+        // Mesh density: physics grid dimensions
+        const COLS = isMobile ? 20 : 28;
+        const ROWS = isMobile ? 20 : 28;
+
+        // Render grid: subdivisions per physics cell for smooth look
+        const RENDER_SUBDIV = 1; // fast path only — subdivision was 4x the triangle count for a barely visible smoothing gain
+
+        // Physics quality
+        const ITERS = isMobile ? 5 : 7; // constraint iterations
+        const GRAVITY = 0.008;
+        const DAMPING = 0.994;
+
+        // Frame limiting
+        const TARGET_FPS = isMobile ? 28 : 38; // target frames per second
+        const FRAME_MS = 1000 / TARGET_FPS;
+
+        // Cloth visual size (logical pixels)
+        const SIZE = isMobile
+          ? Math.min(window.innerWidth, window.innerHeight) * 0.85
+          : 760;
+
+        // Texture native dimensions
+        const IW = 1306,
+          IH = 1630;
+
+        /* ═══════════════════════════════════════════════════════════
+   CANVAS SETUP
+═══════════════════════════════════════════════════════════ */
+        const canvas = document.getElementById("c");
+        const ctx = canvas.getContext("2d", { alpha: false });
+
+        let VW, VH, OX, OY; // viewport and cloth offset
+
+        function resize() {
+          VW = window.innerWidth;
+          VH = window.innerHeight;
+          // Scale canvas for DPR, keep CSS size at 100%
+          canvas.width = Math.round(VW * DPR);
+          canvas.height = Math.round(VH * DPR);
+          canvas.style.width = VW + "px";
+          canvas.style.height = VH + "px";
+          // Center cloth in viewport (logical coords)
+          OX = (VW - SIZE) / 2;
+          OY = (VH - SIZE) / 2;
+          // Apply DPR scale once so all drawing uses logical coords
+          ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+          // Image smoothing quality
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+        }
+
+        resize();
+
+        // Debounced resize to avoid thrashing
+        let resizeTimer = null;
+        window.addEventListener("resize", () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(resize, 100);
+        });
+
+        /* ═══════════════════════════════════════════════════════════
+   TEXTURE
+═══════════════════════════════════════════════════════════ */
+        const tex = new Image();
+        tex.src =
+          "images/cloth-fabric.jpg";
+
+        /* ═══════════════════════════════════════════════════════════
+   PHYSICS — CLOTH SIMULATION
+═══════════════════════════════════════════════════════════ */
+        const CW = SIZE / (COLS - 1);
+        const CH = SIZE / (ROWS - 1);
+
+        // Pinned columns on top row (evenly distributed anchors)
+        const PIN_COLS = new Set([0, Math.floor(COLS / 2), COLS - 1]);
+
+        // Particles: flat arrays for cache efficiency
+        const pX = new Float32Array(COLS * ROWS); // current x
+        const pY = new Float32Array(COLS * ROWS); // current y
+        const pPX = new Float32Array(COLS * ROWS); // previous x
+        const pPY = new Float32Array(COLS * ROWS); // previous y
+        const pPin = new Uint8Array(COLS * ROWS); // 1 = pinned
+
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const i = r * COLS + c;
+            pX[i] = pPX[i] = c * CW;
+            pY[i] = pPY[i] = r * CH;
+            pPin[i] = r === 0 && PIN_COLS.has(c) ? 1 : 0;
+          }
+        }
+
+        // Constraints: flat arrays [a, b, restLength] — structural only
+        const conA = [];
+        const conB = [];
+        const conR = [];
+
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const i = r * COLS + c;
+            if (c < COLS - 1) {
+              conA.push(i);
+              conB.push(i + 1);
+              conR.push(CW);
+            }
+            if (r < ROWS - 1) {
+              conA.push(i);
+              conB.push(i + COLS);
+              conR.push(CH);
+            }
+          }
+        }
+
+        const conCount = conA.length;
+        const caA = new Int32Array(conA);
+        const caB = new Int32Array(conB);
+        const caR = new Float32Array(conR);
+
+        /* ═══════════════════════════════════════════════════════════
+   WIND & TIME STATE
+═══════════════════════════════════════════════════════════ */
+        let simTime = 0;
+        let windTarget = 0.012;
+        let windSmooth = 0.03;
+        let windNextAt = 3.0;
+
+        /* ═══════════════════════════════════════════════════════════
+   INPUT — MOUSE / TOUCH
+═══════════════════════════════════════════════════════════ */
+        let mouseX = -9999,
+          mouseY = -9999;
+        let mouseActive = false;
+        const PUSH_RADIUS = SIZE * 0.1;
+
+        function onMove(cx, cy) {
+          const b = canvas.getBoundingClientRect();
+          mouseX = cx - b.left - OX;
+          mouseY = cy - b.top - OY;
+          mouseActive = true;
+          lastInteraction = performance.now();
+        }
+
+        function onLeave() {
+          mouseActive = false;
+        }
+
+        canvas.addEventListener("mousemove", (e) =>
+          onMove(e.clientX, e.clientY),
+        );
+        canvas.addEventListener("mouseleave", onLeave);
+        canvas.addEventListener(
+          "touchmove",
+          (e) => {
+            e.preventDefault();
+            onMove(e.touches[0].clientX, e.touches[0].clientY);
+          },
+          { passive: false },
+        );
+        canvas.addEventListener("touchend", onLeave);
+
+        /* ═══════════════════════════════════════════════════════════
+   SIMULATION STEP
+═══════════════════════════════════════════════════════════ */
+        function simulate(dt) {
+          simTime += dt;
+
+          // Wind target update
+          if (simTime > windNextAt) {
+            windTarget = (Math.random() - 0.42) * 0.042;
+            windNextAt = simTime + 2.5 + Math.random() * 4.0;
+          }
+          windSmooth += (windTarget - windSmooth) * 0.003;
+
+          const T = simTime;
+
+          // Verlet integration
+          for (let i = 0; i < COLS * ROWS; i++) {
+            if (pPin[i]) continue;
+
+            const col = i % COLS;
+            const row = (i / COLS) | 0;
+            const rowRatio = row / ROWS;
+
+            // Layered wind with organic variation
+            const wx =
+              windSmooth *
+                (0.55 + 0.45 * Math.sin(T * 0.43 + col * 0.21 + row * 0.08)) *
+                (0.65 + 0.35 * Math.sin(T * 0.19 - row * 0.14)) +
+              0.005 * Math.sin(T * 1.2 + col * 0.38);
+            const wy = 0.003 * Math.sin(T * 0.28 + col * 0.17) * rowRatio;
+
+            const vx = (pX[i] - pPX[i]) * DAMPING;
+            const vy = (pY[i] - pPY[i]) * DAMPING;
+            pPX[i] = pX[i];
+            pPY[i] = pY[i];
+            pX[i] += vx + wx;
+            pY[i] += vy + wy + GRAVITY;
+          }
+
+          // Mouse push interaction
+          if (mouseActive) {
+            const pr2 = PUSH_RADIUS * PUSH_RADIUS;
+            for (let i = 0; i < COLS * ROWS; i++) {
+              if (pPin[i]) continue;
+              const dx = pX[i] - mouseX;
+              const dy = pY[i] - mouseY;
+              const d2 = dx * dx + dy * dy;
+              if (d2 < pr2 && d2 > 0.01) {
+                const d = Math.sqrt(d2);
+                const f = ((PUSH_RADIUS - d) / PUSH_RADIUS) * 3.5;
+                pX[i] += (dx / d) * f;
+                pY[i] += (dy / d) * f;
+              }
+            }
+          }
+
+          // Constraint relaxation — use flat typed arrays for speed
+          for (let it = 0; it < ITERS; it++) {
+            for (let k = 0; k < conCount; k++) {
+              const ai = caA[k],
+                bi = caB[k];
+              const dx = pX[bi] - pX[ai];
+              const dy = pY[bi] - pY[ai];
+              const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+              const diff = ((dist - caR[k]) / dist) * 0.5;
+              const ox = dx * diff;
+              const oy = dy * diff;
+              if (!pPin[ai]) {
+                pX[ai] += ox;
+                pY[ai] += oy;
+              }
+              if (!pPin[bi]) {
+                pX[bi] -= ox;
+                pY[bi] -= oy;
+              }
+            }
+          }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   RENDER — AFFINE TEXTURE MAPPING
+   Each physics quad → 2 triangles (or 8 with subdivision)
+═══════════════════════════════════════════════════════════ */
+
+        // Precompute UV coords for each particle (texture space)
+        function getUV(c, r) {
+          return [(c / (COLS - 1)) * IW, (r / (ROWS - 1)) * IH];
+        }
+
+        function drawTriangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2) {
+          // Affine transform: maps (u,v) → (x,y) via 3 point correspondence
+          const det = u0 * (v1 - v2) - v0 * (u1 - u2) + (u1 * v2 - u2 * v1);
+          if (Math.abs(det) < 0.1) return;
+
+          // Source bounding box in texture space — avoids sampling the full
+          // 1306×1630 texture on every one of the ~1.5k triangles per frame
+          const bu0 = Math.max(0, Math.floor(Math.min(u0, u1, u2)) - 1);
+          const bv0 = Math.max(0, Math.floor(Math.min(v0, v1, v2)) - 1);
+          const bu1 = Math.min(IW, Math.ceil(Math.max(u0, u1, u2)) + 1);
+          const bv1 = Math.min(IH, Math.ceil(Math.max(v0, v1, v2)) + 1);
+          const bw = bu1 - bu0;
+          const bh = bv1 - bv0;
+          if (bw <= 0 || bh <= 0) return;
+
+          const a = (x0 * (v1 - v2) - v0 * (x1 - x2) + x1 * v2 - x2 * v1) / det;
+          const b = (y0 * (v1 - v2) - v0 * (y1 - y2) + y1 * v2 - y2 * v1) / det;
+          const c =
+            (-x0 * (u1 - u2) + u0 * (x1 - x2) - x1 * u2 + x2 * u1) / det;
+          const d =
+            (-y0 * (u1 - u2) + u0 * (y1 - y2) - y1 * u2 + y2 * u1) / det;
+          const e =
+            (x0 * (u1 * v2 - u2 * v1) -
+              u0 * (x1 * v2 - x2 * v1) +
+              v0 * (x1 * u2 - x2 * u1)) /
+            det;
+          const f =
+            (y0 * (u1 * v2 - u2 * v1) -
+              u0 * (y1 * v2 - y2 * v1) +
+              v0 * (y1 * u2 - y2 * u1)) /
+            det;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(x0, y0);
+          ctx.lineTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.closePath();
+          ctx.clip();
+          ctx.transform(a, b, c, d, e, f);
+          ctx.drawImage(tex, bu0, bv0, bw, bh, bu0, bv0, bw, bh);
+          ctx.restore();
+        }
+
+        function render() {
+          // Clear with background
+          ctx.fillStyle = "#fafafa";
+          ctx.fillRect(0, 0, VW, VH);
+
+          if (!tex.complete || !tex.naturalWidth) return;
+
+          ctx.save();
+          ctx.translate(OX, OY);
+
+          const S = RENDER_SUBDIV; // subdivision per cell
+
+          if (S <= 1) {
+            // Fast path: 2 triangles per quad
+            for (let r = 0; r < ROWS - 1; r++) {
+              for (let c = 0; c < COLS - 1; c++) {
+                const i0 = r * COLS + c;
+                const x0 = pX[i0],
+                  y0 = pY[i0];
+                const x1 = pX[i0 + 1],
+                  y1 = pY[i0 + 1];
+                const x2 = pX[i0 + COLS],
+                  y2 = pY[i0 + COLS];
+                const x3 = pX[i0 + COLS + 1],
+                  y3 = pY[i0 + COLS + 1];
+                const [u0, v0] = getUV(c, r);
+                const [u1, v1] = getUV(c + 1, r);
+                const [u2, v2] = getUV(c, r + 1);
+                const [u3, v3] = getUV(c + 1, r + 1);
+                drawTriangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2);
+                drawTriangle(x1, y1, u1, v1, x3, y3, u3, v3, x2, y2, u2, v2);
+              }
+            }
+          } else {
+            // Smooth path: bilinear interpolation of corners, then S×S sub-quads
+            for (let r = 0; r < ROWS - 1; r++) {
+              for (let c = 0; c < COLS - 1; c++) {
+                const i0 = r * COLS + c;
+                const x00 = pX[i0],
+                  y00 = pY[i0];
+                const x10 = pX[i0 + 1],
+                  y10 = pY[i0 + 1];
+                const x01 = pX[i0 + COLS],
+                  y01 = pY[i0 + COLS];
+                const x11 = pX[i0 + COLS + 1],
+                  y11 = pY[i0 + COLS + 1];
+                const u00 = (c / (COLS - 1)) * IW,
+                  v00 = (r / (ROWS - 1)) * IH;
+                const u10 = ((c + 1) / (COLS - 1)) * IW,
+                  v10 = (r / (ROWS - 1)) * IH;
+                const u01 = (c / (COLS - 1)) * IW,
+                  v01 = ((r + 1) / (ROWS - 1)) * IH;
+                const u11 = ((c + 1) / (COLS - 1)) * IW,
+                  v11 = ((r + 1) / (ROWS - 1)) * IH;
+
+                for (let si = 0; si < S; si++) {
+                  for (let sj = 0; sj < S; sj++) {
+                    // Bilinear lerp for 4 sub-corners
+                    const ta0 = si / S,
+                      ta1 = (si + 1) / S;
+                    const tb0 = sj / S,
+                      tb1 = (sj + 1) / S;
+
+                    // Helper: bilerp position
+                    function bx(ta, tb) {
+                      return (
+                        x00 * (1 - ta) * (1 - tb) +
+                        x10 * ta * (1 - tb) +
+                        x01 * (1 - ta) * tb +
+                        x11 * ta * tb
+                      );
+                    }
+                    function by(ta, tb) {
+                      return (
+                        y00 * (1 - ta) * (1 - tb) +
+                        y10 * ta * (1 - tb) +
+                        y01 * (1 - ta) * tb +
+                        y11 * ta * tb
+                      );
+                    }
+                    function bu(ta, tb) {
+                      return (
+                        u00 * (1 - ta) * (1 - tb) +
+                        u10 * ta * (1 - tb) +
+                        u01 * (1 - ta) * tb +
+                        u11 * ta * tb
+                      );
+                    }
+                    function bv(ta, tb) {
+                      return (
+                        v00 * (1 - ta) * (1 - tb) +
+                        v10 * ta * (1 - tb) +
+                        v01 * (1 - ta) * tb +
+                        v11 * ta * tb
+                      );
+                    }
+
+                    const sx0 = bx(ta0, tb0),
+                      sy0 = by(ta0, tb0),
+                      su0 = bu(ta0, tb0),
+                      sv0 = bv(ta0, tb0);
+                    const sx1 = bx(ta1, tb0),
+                      sy1 = by(ta1, tb0),
+                      su1 = bu(ta1, tb0),
+                      sv1 = bv(ta1, tb0);
+                    const sx2 = bx(ta0, tb1),
+                      sy2 = by(ta0, tb1),
+                      su2 = bu(ta0, tb1),
+                      sv2 = bv(ta0, tb1);
+                    const sx3 = bx(ta1, tb1),
+                      sy3 = by(ta1, tb1),
+                      su3 = bu(ta1, tb1),
+                      sv3 = bv(ta1, tb1);
+
+                    drawTriangle(
+                      sx0,
+                      sy0,
+                      su0,
+                      sv0,
+                      sx1,
+                      sy1,
+                      su1,
+                      sv1,
+                      sx2,
+                      sy2,
+                      su2,
+                      sv2,
+                    );
+                    drawTriangle(
+                      sx1,
+                      sy1,
+                      su1,
+                      sv1,
+                      sx3,
+                      sy3,
+                      su3,
+                      sv3,
+                      sx2,
+                      sy2,
+                      su2,
+                      sv2,
+                    );
+                  }
+                }
+              }
+            }
+          }
+
+          ctx.restore();
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   PERFORMANCE — FIXED-TIMESTEP PHYSICS + THROTTLED RENDER + VISIBILITY
+   Physics steps at a constant dt (smooth, frame-rate independent
+   motion) while the comparatively expensive Canvas2D render stays
+   capped to TARGET_FPS to bound CPU cost.
+═══════════════════════════════════════════════════════════ */
+        const FIXED_DT = 1 / 60;
+        const MAX_SUBSTEPS = 5; // avoid a "spiral of death" after a long pause
+
+        let lastFrameTime = 0;
+        let lastRenderTime = 0;
+        let lastInteraction = performance.now();
+        let accumulator = 0;
+        const IDLE_THRESHOLD_MS = 6000; // reduce fps after 6s no interaction
+
+        // Page Visibility — pause when tab hidden
+        let isVisible = true;
+        document.addEventListener("visibilitychange", () => {
+          isVisible = !document.hidden;
+          if (isVisible) {
+            lastFrameTime = 0; // reset timing on return
+            accumulator = 0;
+          }
+        });
+
+        function loop(now) {
+          requestAnimationFrame(loop);
+
+          // Skip if tab hidden
+          if (!isVisible) return;
+
+          if (lastFrameTime === 0) {
+            lastFrameTime = now;
+            render();
+            return;
+          }
+
+          const frameTime = Math.min((now - lastFrameTime) / 1000, 0.25);
+          lastFrameTime = now;
+          accumulator += frameTime;
+
+          let steps = 0;
+          while (accumulator >= FIXED_DT && steps < MAX_SUBSTEPS) {
+            simulate(FIXED_DT);
+            accumulator -= FIXED_DT;
+            steps++;
+          }
+
+          // Adaptive render throttling — physics stays smooth above,
+          // only the (expensive) draw is capped.
+          const idle = now - lastInteraction > IDLE_THRESHOLD_MS;
+          const targetMs = idle ? FRAME_MS * 1.4 : FRAME_MS;
+          if (now - lastRenderTime < targetMs) return;
+          lastRenderTime = now;
+
+          render();
+        }
+
+        requestAnimationFrame(loop);
+      })();
+    </script>
+  </body>
+</html>

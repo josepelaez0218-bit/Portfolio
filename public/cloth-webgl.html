@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cloth — WebGL</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: #fafafa;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        position: fixed;
+        inset: 0;
+        cursor: crosshair;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <script>
+      (function () {
+        "use strict";
+
+        /* ═══════════════════════════════════════════════════════════
+   DEVICE DETECTION — adaptive quality per platform
+═══════════════════════════════════════════════════════════ */
+        const isMobile =
+          /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
+          window.innerWidth < 768;
+
+        const DPR = Math.min(
+          window.devicePixelRatio || 1,
+          isMobile ? 1.2 : 1.5,
+        );
+
+        // Mesh density: physics grid dimensions. WebGL renders every
+        // triangle in a single draw call, so we can afford a denser
+        // mesh than the Canvas2D version without a performance cost.
+        const COLS = isMobile ? 26 : 36;
+        const ROWS = isMobile ? 26 : 36;
+
+        // Physics quality
+        const ITERS = isMobile ? 5 : 7; // constraint iterations
+        const GRAVITY = 0.008;
+        const DAMPING = 0.994;
+
+        // Cloth visual size (logical pixels)
+        const SIZE = isMobile
+          ? Math.min(window.innerWidth, window.innerHeight) * 0.85
+          : 760;
+
+        /* ═══════════════════════════════════════════════════════════
+   CANVAS / WEBGL SETUP
+═══════════════════════════════════════════════════════════ */
+        const canvas = document.getElementById("c");
+        const gl =
+          canvas.getContext("webgl", { antialias: true, alpha: false }) ||
+          canvas.getContext("experimental-webgl", {
+            antialias: true,
+            alpha: false,
+          });
+
+        if (!gl) {
+          // No WebGL support — fall back to the Canvas2D version.
+          window.location.replace("cloth.html");
+          return;
+        }
+
+        let VW, VH, OX, OY;
+
+        function resize() {
+          VW = window.innerWidth;
+          VH = window.innerHeight;
+          canvas.width = Math.round(VW * DPR);
+          canvas.height = Math.round(VH * DPR);
+          canvas.style.width = VW + "px";
+          canvas.style.height = VH + "px";
+          OX = (VW - SIZE) / 2;
+          OY = (VH - SIZE) / 2;
+          gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+
+        resize();
+
+        let resizeTimer = null;
+        window.addEventListener("resize", () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(resize, 100);
+        });
+
+        /* ═══════════════════════════════════════════════════════════
+   SHADERS
+═══════════════════════════════════════════════════════════ */
+        const vertSrc = `
+          attribute vec2 aPos;   // cloth-local pixel position
+          attribute vec2 aUV;
+          uniform vec2 uOffset;  // OX, OY
+          uniform vec2 uViewport; // VW, VH
+          varying vec2 vUV;
+          void main() {
+            vec2 px = aPos + uOffset;
+            vec2 clip = vec2(
+              (px.x / uViewport.x) * 2.0 - 1.0,
+              1.0 - (px.y / uViewport.y) * 2.0
+            );
+            gl_Position = vec4(clip, 0.0, 1.0);
+            vUV = aUV;
+          }
+        `;
+
+        const fragSrc = `
+          precision mediump float;
+          varying vec2 vUV;
+          uniform sampler2D uTex;
+          void main() {
+            gl_FragColor = texture2D(uTex, vUV);
+          }
+        `;
+
+        function compile(type, src) {
+          const sh = gl.createShader(type);
+          gl.shaderSource(sh, src);
+          gl.compileShader(sh);
+          if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+            console.error(gl.getShaderInfoLog(sh));
+          }
+          return sh;
+        }
+
+        const program = gl.createProgram();
+        gl.attachShader(program, compile(gl.VERTEX_SHADER, vertSrc));
+        gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragSrc));
+        gl.linkProgram(program);
+        gl.useProgram(program);
+
+        const aPosLoc = gl.getAttribLocation(program, "aPos");
+        const aUVLoc = gl.getAttribLocation(program, "aUV");
+        const uOffsetLoc = gl.getUniformLocation(program, "uOffset");
+        const uViewportLoc = gl.getUniformLocation(program, "uViewport");
+        const uTexLoc = gl.getUniformLocation(program, "uTex");
+
+        gl.clearColor(0xfa / 255, 0xfa / 255, 0xfa / 255, 1);
+        gl.disable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+        /* ═══════════════════════════════════════════════════════════
+   TEXTURE
+═══════════════════════════════════════════════════════════ */
+        const glTex = gl.createTexture();
+        let texReady = false;
+        const tex = new Image();
+        tex.onload = () => {
+          gl.bindTexture(gl.TEXTURE_2D, glTex);
+          // No vertical flip: our UV mapping already treats v=0 as the
+          // image's top row (same convention as the Canvas2D version),
+          // so flipping here would upload the texture upside down.
+          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+          gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            tex,
+          );
+          gl.texParameteri(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_WRAP_S,
+            gl.CLAMP_TO_EDGE,
+          );
+          gl.texParameteri(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_WRAP_T,
+            gl.CLAMP_TO_EDGE,
+          );
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          texReady = true;
+        };
+        tex.src = "images/cloth-fabric.jpg";
+
+        /* ═══════════════════════════════════════════════════════════
+   PHYSICS — CLOTH SIMULATION (identical model to cloth.html)
+═══════════════════════════════════════════════════════════ */
+        const CW = SIZE / (COLS - 1);
+        const CH = SIZE / (ROWS - 1);
+
+        const PIN_COLS = new Set([0, Math.floor(COLS / 2), COLS - 1]);
+
+        const pX = new Float32Array(COLS * ROWS);
+        const pY = new Float32Array(COLS * ROWS);
+        const pPX = new Float32Array(COLS * ROWS);
+        const pPY = new Float32Array(COLS * ROWS);
+        const pPin = new Uint8Array(COLS * ROWS);
+
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const i = r * COLS + c;
+            pX[i] = pPX[i] = c * CW;
+            pY[i] = pPY[i] = r * CH;
+            pPin[i] = r === 0 && PIN_COLS.has(c) ? 1 : 0;
+          }
+        }
+
+        const conA = [];
+        const conB = [];
+        const conR = [];
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const i = r * COLS + c;
+            if (c < COLS - 1) {
+              conA.push(i);
+              conB.push(i + 1);
+              conR.push(CW);
+            }
+            if (r < ROWS - 1) {
+              conA.push(i);
+              conB.push(i + COLS);
+              conR.push(CH);
+            }
+          }
+        }
+        const conCount = conA.length;
+        const caA = new Int32Array(conA);
+        const caB = new Int32Array(conB);
+        const caR = new Float32Array(conR);
+
+        let simTime = 0;
+        let windTarget = 0.012;
+        let windSmooth = 0.03;
+        let windNextAt = 3.0;
+
+        let mouseX = -9999,
+          mouseY = -9999;
+        let mouseActive = false;
+        const PUSH_RADIUS = SIZE * 0.1;
+
+        function onMove(cx, cy) {
+          const b = canvas.getBoundingClientRect();
+          mouseX = cx - b.left - OX;
+          mouseY = cy - b.top - OY;
+          mouseActive = true;
+        }
+        function onLeave() {
+          mouseActive = false;
+        }
+        canvas.addEventListener("mousemove", (e) =>
+          onMove(e.clientX, e.clientY),
+        );
+        canvas.addEventListener("mouseleave", onLeave);
+        canvas.addEventListener(
+          "touchmove",
+          (e) => {
+            e.preventDefault();
+            onMove(e.touches[0].clientX, e.touches[0].clientY);
+          },
+          { passive: false },
+        );
+        canvas.addEventListener("touchend", onLeave);
+
+        function simulate(dt) {
+          simTime += dt;
+          if (simTime > windNextAt) {
+            windTarget = (Math.random() - 0.42) * 0.042;
+            windNextAt = simTime + 2.5 + Math.random() * 4.0;
+          }
+          windSmooth += (windTarget - windSmooth) * 0.003;
+          const T = simTime;
+
+          for (let i = 0; i < COLS * ROWS; i++) {
+            if (pPin[i]) continue;
+            const col = i % COLS;
+            const row = (i / COLS) | 0;
+            const rowRatio = row / ROWS;
+            const wx =
+              windSmooth *
+                (0.55 + 0.45 * Math.sin(T * 0.43 + col * 0.21 + row * 0.08)) *
+                (0.65 + 0.35 * Math.sin(T * 0.19 - row * 0.14)) +
+              0.005 * Math.sin(T * 1.2 + col * 0.38);
+            const wy = 0.003 * Math.sin(T * 0.28 + col * 0.17) * rowRatio;
+            const vx = (pX[i] - pPX[i]) * DAMPING;
+            const vy = (pY[i] - pPY[i]) * DAMPING;
+            pPX[i] = pX[i];
+            pPY[i] = pY[i];
+            pX[i] += vx + wx;
+            pY[i] += vy + wy + GRAVITY;
+          }
+
+          if (mouseActive) {
+            const pr2 = PUSH_RADIUS * PUSH_RADIUS;
+            for (let i = 0; i < COLS * ROWS; i++) {
+              if (pPin[i]) continue;
+              const dx = pX[i] - mouseX;
+              const dy = pY[i] - mouseY;
+              const d2 = dx * dx + dy * dy;
+              if (d2 < pr2 && d2 > 0.01) {
+                const d = Math.sqrt(d2);
+                const f = ((PUSH_RADIUS - d) / PUSH_RADIUS) * 3.5;
+                pX[i] += (dx / d) * f;
+                pY[i] += (dy / d) * f;
+              }
+            }
+          }
+
+          for (let it = 0; it < ITERS; it++) {
+            for (let k = 0; k < conCount; k++) {
+              const ai = caA[k],
+                bi = caB[k];
+              const dx = pX[bi] - pX[ai];
+              const dy = pY[bi] - pY[ai];
+              const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+              const diff = ((dist - caR[k]) / dist) * 0.5;
+              const ox = dx * diff;
+              const oy = dy * diff;
+              if (!pPin[ai]) {
+                pX[ai] += ox;
+                pY[ai] += oy;
+              }
+              if (!pPin[bi]) {
+                pX[bi] -= ox;
+                pY[bi] -= oy;
+              }
+            }
+          }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   GPU BUFFERS — one draw call per frame regardless of mesh density
+═══════════════════════════════════════════════════════════ */
+        const vertCount = COLS * ROWS;
+        const uvData = new Float32Array(vertCount * 2);
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const i = r * COLS + c;
+            uvData[i * 2] = c / (COLS - 1);
+            uvData[i * 2 + 1] = r / (ROWS - 1);
+          }
+        }
+
+        const indices = [];
+        for (let r = 0; r < ROWS - 1; r++) {
+          for (let c = 0; c < COLS - 1; c++) {
+            const i0 = r * COLS + c;
+            indices.push(i0, i0 + 1, i0 + COLS);
+            indices.push(i0 + 1, i0 + COLS + 1, i0 + COLS);
+          }
+        }
+        const indexData = new Uint16Array(indices);
+
+        const posBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertCount * 2 * 4, gl.DYNAMIC_DRAW);
+
+        const uvBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, uvData, gl.STATIC_DRAW);
+
+        const idxBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
+
+        const posInterleaved = new Float32Array(vertCount * 2);
+
+        function render() {
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          if (!texReady) return;
+
+          for (let i = 0; i < vertCount; i++) {
+            posInterleaved[i * 2] = pX[i];
+            posInterleaved[i * 2 + 1] = pY[i];
+          }
+
+          gl.useProgram(program);
+          gl.uniform2f(uOffsetLoc, OX, OY);
+          gl.uniform2f(uViewportLoc, VW, VH);
+
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, glTex);
+          gl.uniform1i(uTexLoc, 0);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+          gl.bufferSubData(gl.ARRAY_BUFFER, 0, posInterleaved);
+          gl.enableVertexAttribArray(aPosLoc);
+          gl.vertexAttribPointer(aPosLoc, 2, gl.FLOAT, false, 0, 0);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+          gl.enableVertexAttribArray(aUVLoc);
+          gl.vertexAttribPointer(aUVLoc, 2, gl.FLOAT, false, 0, 0);
+
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuffer);
+          gl.drawElements(
+            gl.TRIANGLES,
+            indexData.length,
+            gl.UNSIGNED_SHORT,
+            0,
+          );
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   FRAME LOOP — fixed timestep + visibility
+   The physics step runs at a constant dt regardless of the display's
+   refresh rate or frame-timing jitter, which is what keeps the cloth's
+   motion smooth. Capping to an arbitrary "target FPS" close to the
+   screen's real refresh rate (as before) causes periodic dropped
+   frames — a visible stutter. Render is cheap (one WebGL draw call),
+   so it just runs every rAF tick.
+═══════════════════════════════════════════════════════════ */
+        const FIXED_DT = 1 / 60;
+        const MAX_SUBSTEPS = 5; // avoid a "spiral of death" after a long pause
+
+        let lastFrameTime = 0;
+        let accumulator = 0;
+
+        let isVisible = true;
+        document.addEventListener("visibilitychange", () => {
+          isVisible = !document.hidden;
+          if (isVisible) {
+            lastFrameTime = 0;
+            accumulator = 0;
+          }
+        });
+
+        function loop(now) {
+          requestAnimationFrame(loop);
+          if (!isVisible) return;
+
+          if (lastFrameTime === 0) {
+            lastFrameTime = now;
+            render();
+            return;
+          }
+
+          const frameTime = Math.min((now - lastFrameTime) / 1000, 0.25);
+          lastFrameTime = now;
+          accumulator += frameTime;
+
+          let steps = 0;
+          while (accumulator >= FIXED_DT && steps < MAX_SUBSTEPS) {
+            simulate(FIXED_DT);
+            accumulator -= FIXED_DT;
+            steps++;
+          }
+
+          render();
+        }
+
+        requestAnimationFrame(loop);
+      })();
+    </script>
+  </body>
+</html>

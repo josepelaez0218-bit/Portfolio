@@ -1,0 +1,12 @@
+# Buen Puerto
+
+> Creative studio building websites and brands for growing businesses.
+
+## Pages
+
+- [Home](/): Portfolio overview with selected projects.
+- [Emotion Quotient](/work/seedtag-emotion-quotient): A live weekly report ranking the 5 cultural moments the world felt most — built on Seedtag's own content-emotion technology.
+- [North — Banking, redrawn](/work/north-banking-app): A 7 hour sprint reimagining everyday banking for a young European audience.
+- [Fieldnotes — Writing tool](/work/fieldnotes-editor): A focused writing environment built around one idea: the page should disappear.
+- [Studio Archive](/work/studio-archive): An ongoing visual archive of studio experiments and references.
+- [Lab](/lab): Experiments, prototypes and design explorations.
