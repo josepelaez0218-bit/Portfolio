@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import CustomCursor from "@/components/CustomCursor";
 import Footer from "@/components/Footer";
 import ImageTrailHero from "@/components/ImageTrailHero";
+import IntroText from "@/components/IntroText";
 import LabSection from "@/components/LabSection";
 import Nav from "@/components/Nav";
 import ProjectsGallery from "@/components/ProjectsGallery";
@@ -47,27 +48,27 @@ const Index = () => {
       <CustomCursor />
       <Nav />
 
-      <section className="relative w-full h-[100dvh] overflow-hidden bg-background flex items-end touch-pan-y">
-        <ImageTrailHero />
-
-        <div className="relative z-20 w-full pointer-events-none px-6 pb-[max(40px,env(safe-area-inset-bottom,40px))] md:px-8 md:pb-[max(80px,env(safe-area-inset-bottom,80px))]">
-          <div className="max-w-[1400px] mx-auto">
-            <h1
-              className="font-sans font-extrabold text-foreground animate-fade-up text-[36px] leading-[38px] md:text-[56px] md:leading-[60px]"
-              style={{
-                letterSpacing: "-0.02em",
-                animationDelay: "0.35s",
-                animationDuration: "1.1s",
-              }}
-            >
-              <span className="sr-only">Jose Peláez — </span>Where brands
-              <br />
-              find their way.
-            </h1>
-          </div>
+      <section className="relative w-full h-[100dvh] overflow-hidden bg-[#F5F5F5] flex items-center justify-center touch-pan-y">
+        <div className="relative z-0 w-full pointer-events-none px-6 flex items-center justify-center">
+          <h1
+            className="font-sans font-black uppercase text-white animate-fade-up text-center leading-[0.95]"
+            style={{
+              fontSize: "clamp(3.5rem, 16vw, 13rem)",
+              letterSpacing: "-0.02em",
+              animationDelay: "0.35s",
+              animationDuration: "1.1s",
+            }}
+          >
+            <span className="sr-only">Jose Peláez — </span>Brand & website
+            <br />
+            studio.
+          </h1>
         </div>
+
+        <ImageTrailHero />
       </section>
 
+      <IntroText />
       <ProjectsGallery />
       <LabSection />
       <Footer />

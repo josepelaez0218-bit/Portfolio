@@ -10,6 +10,7 @@ const PROJECT_FIELDS = /* groq */ `
   tags,
   cover,
   "coverVideoUrl": coverVideo.asset->url,
+  coverOverlay,
   hero,
   heroBleed,
   "heroVideoUrl": heroVideo.asset->url,

@@ -146,7 +146,7 @@ const ProjectDetail = () => {
         </div>
       ) : (
         /* Hero, framed gray section */
-        <section className="w-full bg-[hsl(0_0%_92%)] px-6 md:px-8 pt-28 pb-20 md:pt-32 md:pb-28">
+        <section className="w-full bg-[hsl(0_0%_92%)] px-6 pt-28 pb-20 md:pt-32 md:pb-28">
           <div className="max-w-[1400px] mx-auto">
             <div className="w-full overflow-hidden reveal" data-reveal>
               {project.heroVideoUrl ? (
@@ -173,7 +173,7 @@ const ProjectDetail = () => {
       )}
 
       {/* Content */}
-      <main className="bg-background px-6 md:px-8 pt-16 md:pt-24 pb-32">
+      <main className="bg-background px-6 pt-16 md:pt-24 pb-32">
         <div className="max-w-[1400px] mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-[180px_1fr] gap-12 lg:gap-24">
             {/* Sidebar */}

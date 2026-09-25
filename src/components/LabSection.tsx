@@ -16,7 +16,7 @@ const LabSection = ({ as: Heading = "h2" }: { as?: "h1" | "h2" }) => {
       <section className="relative w-full h-[68dvh] md:h-[72dvh] overflow-hidden bg-background flex items-end touch-pan-y">
         <MatterLetters />
 
-        <div className="relative z-20 w-full pointer-events-none px-6 pb-[max(20px,env(safe-area-inset-bottom,20px))] md:px-8 md:pb-[max(32px,env(safe-area-inset-bottom,32px))]">
+        <div className="relative z-20 w-full pointer-events-none px-6 pb-[max(20px,env(safe-area-inset-bottom,20px))] md:pb-[max(32px,env(safe-area-inset-bottom,32px))]">
           <div className="max-w-[1400px] mx-auto">
             <Heading
               className="font-sans font-extrabold text-foreground animate-fade-up text-[36px] leading-[38px] md:text-[56px] md:leading-[60px]"

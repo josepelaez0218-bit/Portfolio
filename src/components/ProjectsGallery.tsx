@@ -79,15 +79,15 @@ const ProjectsGallery = () => {
   return (
     <section
       id="work"
-      className="relative z-10 -mt-8 md:-mt-14 w-full bg-background px-6 md:px-8 pt-16 pb-24 md:pt-24 md:pb-32"
+      className="relative z-10 w-full bg-background px-6 pb-24 md:pb-32"
     >
-      <div className="max-w-[1400px] mx-auto">
+      <div className="max-w-[1400px] min-[1600px]:max-w-[1900px] mx-auto">
         {!loading && projects.length === 0 ? (
           <p className="text-[14px] font-light text-foreground/50">
             No projects published yet.
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14 md:gap-x-8 md:gap-y-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14">
             {projects.map((project, i) => (
               <Link
                 key={project._id}
@@ -119,18 +119,23 @@ const ProjectsGallery = () => {
                       />
                     )}
                   </div>
+                  {project.coverOverlay && (
+                    <img
+                      src={urlForImage(project.coverOverlay).width(400).url()}
+                      alt=""
+                      aria-hidden="true"
+                      className="pointer-events-none absolute right-[5%] top-[26%] h-[48%] w-auto z-10"
+                    />
+                  )}
                 </div>
-                <div className="mt-4 flex items-baseline justify-between gap-4">
-                  <h2 className="text-[15px] font-medium text-foreground tracking-[0.01em]">
+                <div className="mt-3 flex items-baseline justify-between gap-4">
+                  <h2 className="text-[14px] font-normal text-foreground tracking-[0.01em]">
                     {project.title}
                   </h2>
-                  <span className="text-[12px] font-light text-foreground/50 tracking-[0.01em]">
+                  <span className="text-[14px] font-light text-foreground/50 tracking-[0.01em]">
                     {(project.tags ?? []).join(" · ")}
                   </span>
                 </div>
-                <p className="mt-1 text-[13px] font-light text-foreground/60 leading-[1.5] max-w-[420px]">
-                  {project.description}
-                </p>
               </Link>
             ))}
           </div>

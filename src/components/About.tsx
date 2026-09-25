@@ -21,7 +21,7 @@ const About = () => {
   if (!about) return null;
 
   return (
-    <section id="about" className="relative z-10 w-full bg-background px-6 md:px-8 pt-16 pb-16 md:pt-8 md:pb-24">
+    <section id="about" className="relative z-10 w-full bg-background px-6 pt-16 pb-16 md:pt-8 md:pb-24">
       <div className="max-w-[1400px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 md:gap-16">
           {about.photo && (

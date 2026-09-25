@@ -58,6 +58,12 @@ export const project = defineType({
       options: {accept: 'video/*'},
     }),
     defineField({
+      name: 'coverOverlay',
+      title: 'Cover overlay logo (optional)',
+      description: 'A logo/badge image pinned over the top-right of the cover in the grid — e.g. a client logo composited on top of a photo or video cover. Use a transparent PNG/SVG-exported PNG.',
+      type: 'image',
+    }),
+    defineField({
       name: 'hero',
       title: 'Hero image',
       description: 'Big image at the top of the case study.',

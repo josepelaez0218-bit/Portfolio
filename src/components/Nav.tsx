@@ -28,8 +28,8 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
   const handleLabClick: MouseEventHandler<HTMLAnchorElement> = (e) => scrollToId("lab", e);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[200] px-6 md:px-8 pt-7 animate-slide-down mix-blend-difference text-white">
-      <div className="max-w-[1400px] mx-auto flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-[200] px-6 pt-7 animate-slide-down mix-blend-difference text-white">
+      <div className="max-w-[1400px] min-[1600px]:max-w-[1900px] mx-auto flex items-center justify-between">
         <div className="flex flex-col">
           <Link
             to="/"

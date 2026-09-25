@@ -39,6 +39,7 @@ export interface SanityProject {
   tags: string[];
   cover: SanityImageSource;
   coverVideoUrl?: string;
+  coverOverlay?: SanityImageSource;
   hero: SanityImageSource;
   heroBleed?: boolean;
   heroVideoUrl?: string;

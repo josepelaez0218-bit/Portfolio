@@ -17,6 +17,14 @@ const DIMS = [
   { w: 400, h: 500 },
 ];
 
+// Smaller on mobile — at full desktop size they cover almost the whole
+// hero and hide the headline behind them.
+const DIMS_MOBILE = [
+  { w: 190, h: 238 },
+  { w: 215, h: 269 },
+  { w: 175, h: 219 },
+];
+
 const THRESHOLD = 75;
 const MIN_SPAWN_INTERVAL = 110;
 const HIDE_AFTER = 1400;
@@ -61,13 +69,14 @@ const ImageTrailHero = () => {
     if (!hero) return;
 
     const isDesktop = window.matchMedia("(min-width: 769px)").matches;
+    const dims = isDesktop ? DIMS : DIMS_MOBILE;
 
     SRCS.forEach((s) => {
       const img = new Image();
       img.src = s;
     });
 
-    const pool: PoolItem[] = DIMS.map((dim, i) => {
+    const pool: PoolItem[] = dims.map((dim, i) => {
       const el = poolRefs.current[i];
       if (!el) throw new Error("pool ref missing");
       el.style.width = `${dim.w}px`;
@@ -158,12 +167,26 @@ const ImageTrailHero = () => {
     hero.addEventListener("mousemove", onMouseMove, { passive: true });
     hero.addEventListener("mouseleave", hideAll);
 
+    // Once the hero scrolls out of view, stop spawning (autoplay would
+    // otherwise keep firing forever) and clear anything still fading out,
+    // so nothing lingers or pops in at the bottom edge while scrolling.
+    let heroVisible = true;
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        heroVisible = entry.isIntersecting;
+        if (!heroVisible) hideAll();
+      },
+      { threshold: 0 },
+    );
+    visibilityObserver.observe(hero);
+
     // Ambient autoplay — spawns at a wandering point on its own whenever
     // there's no cursor to follow (mobile) or the cursor has been idle.
     let autoX = 0;
     let autoY = 0;
     let autoInit = false;
     const autoplayTick = () => {
+      if (!heroVisible) return;
       const idle = !isDesktop || performance.now() - lastRealMoveTime > AUTOPLAY_IDLE_DELAY;
       if (!idle || rect.width === 0 || rect.height === 0) return;
       const marginX = Math.min(120, rect.width * 0.2);
@@ -190,6 +213,7 @@ const ImageTrailHero = () => {
       window.removeEventListener("resize", updateRect);
       hero.removeEventListener("mousemove", onMouseMove);
       hero.removeEventListener("mouseleave", hideAll);
+      visibilityObserver.disconnect();
       if (rafId !== null) cancelAnimationFrame(rafId);
       window.clearInterval(autoplayId);
       window.clearTimeout(autoplayStartId);
