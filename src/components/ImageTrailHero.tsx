@@ -143,29 +143,44 @@ const ImageTrailHero = () => {
       lastX = lastY = -9999;
     };
 
-    // Raw mousemove can fire well over 100x/sec — only act on the latest
-    // position once per animation frame, so spawning never competes with
-    // the browser's paint/composite work for the same frame.
-    let pendingEvent: MouseEvent | null = null;
+    // Raw mousemove/touchmove can fire well over 100x/sec — only act on
+    // the latest position once per animation frame, so spawning never
+    // competes with the browser's paint/composite work for the same frame.
+    let pendingX = 0;
+    let pendingY = 0;
+    let hasPending = false;
     let rafId: number | null = null;
 
     const processMove = () => {
       rafId = null;
-      const e = pendingEvent;
-      if (!e) return;
-      const { x, y } = toHero(e.clientX, e.clientY);
+      if (!hasPending) return;
+      const { x, y } = toHero(pendingX, pendingY);
       const sinceLastSpawn = performance.now() - lastSpawnTime;
       if (dist(x, y, lastX, lastY) > THRESHOLD && sinceLastSpawn > MIN_SPAWN_INTERVAL) spawn(x, y);
     };
 
-    const onMouseMove = (e: MouseEvent) => {
+    const queueMove = (clientX: number, clientY: number) => {
       lastRealMoveTime = performance.now();
-      pendingEvent = e;
+      pendingX = clientX;
+      pendingY = clientY;
+      hasPending = true;
       if (rafId === null) rafId = requestAnimationFrame(processMove);
+    };
+
+    const onMouseMove = (e: MouseEvent) => queueMove(e.clientX, e.clientY);
+    const onTouchMove = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (t) queueMove(t.clientX, t.clientY);
     };
 
     hero.addEventListener("mousemove", onMouseMove, { passive: true });
     hero.addEventListener("mouseleave", hideAll);
+    // touch-pan-y on the section already keeps vertical scroll working —
+    // these are passive (no preventDefault) so a finger drag still scrolls
+    // the page if it moves mostly vertically.
+    hero.addEventListener("touchmove", onTouchMove, { passive: true });
+    hero.addEventListener("touchend", hideAll, { passive: true });
+    hero.addEventListener("touchcancel", hideAll, { passive: true });
 
     // Once the hero scrolls out of view, stop spawning (autoplay would
     // otherwise keep firing forever) and clear anything still fading out,
@@ -187,7 +202,7 @@ const ImageTrailHero = () => {
     let autoInit = false;
     const autoplayTick = () => {
       if (!heroVisible) return;
-      const idle = !isDesktop || performance.now() - lastRealMoveTime > AUTOPLAY_IDLE_DELAY;
+      const idle = performance.now() - lastRealMoveTime > AUTOPLAY_IDLE_DELAY;
       if (!idle || rect.width === 0 || rect.height === 0) return;
       const marginX = Math.min(120, rect.width * 0.2);
       const marginY = Math.min(120, rect.height * 0.2);
@@ -213,6 +228,9 @@ const ImageTrailHero = () => {
       window.removeEventListener("resize", updateRect);
       hero.removeEventListener("mousemove", onMouseMove);
       hero.removeEventListener("mouseleave", hideAll);
+      hero.removeEventListener("touchmove", onTouchMove);
+      hero.removeEventListener("touchend", hideAll);
+      hero.removeEventListener("touchcancel", hideAll);
       visibilityObserver.disconnect();
       if (rafId !== null) cancelAnimationFrame(rafId);
       window.clearInterval(autoplayId);
