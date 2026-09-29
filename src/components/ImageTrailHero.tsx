@@ -11,6 +11,11 @@ const SRCS = [
 
 // Source images are all 4:5 portrait — keep the pool boxes close to that
 // ratio so object-cover doesn't crop them aggressively.
+// Desktop sizes are tuned for a ~1300px-tall viewport (a 2K screen) and
+// scale down with shorter viewports (e.g. laptops) so they keep the same
+// share of the hero instead of swamping it.
+const DESKTOP_REFERENCE_HEIGHT = 1300;
+const MIN_DESKTOP_SCALE = 0.55;
 const DIMS = [
   { w: 440, h: 550 },
   { w: 500, h: 625 },
@@ -76,13 +81,24 @@ const ImageTrailHero = () => {
       img.src = s;
     });
 
-    const pool: PoolItem[] = dims.map((dim, i) => {
+    const scaleFor = () =>
+      isDesktop ? Math.min(1, Math.max(MIN_DESKTOP_SCALE, window.innerHeight / DESKTOP_REFERENCE_HEIGHT)) : 1;
+
+    const pool: PoolItem[] = dims.map((_, i) => {
       const el = poolRefs.current[i];
       if (!el) throw new Error("pool ref missing");
-      el.style.width = `${dim.w}px`;
-      el.style.height = `${dim.h}px`;
-      return { el, w: dim.w, h: dim.h, visible: false, z: 0, tid: null };
+      return { el, w: 0, h: 0, visible: false, z: 0, tid: null };
     });
+    const sizePool = () => {
+      const k = scaleFor();
+      pool.forEach((item, i) => {
+        item.w = Math.round(dims[i].w * k);
+        item.h = Math.round(dims[i].h * k);
+        item.el.style.width = `${item.w}px`;
+        item.el.style.height = `${item.h}px`;
+      });
+    };
+    sizePool();
 
     let zC = 0;
     let lastX = -9999;
@@ -99,6 +115,7 @@ const ImageTrailHero = () => {
       rect = hero.getBoundingClientRect();
     };
     window.addEventListener("resize", updateRect);
+    window.addEventListener("resize", sizePool);
 
     const getSlot = () => pool.find((p) => !p.visible) ?? pool.reduce((m, p) => (p.z < m.z ? p : m), pool[0]);
 
@@ -226,6 +243,7 @@ const ImageTrailHero = () => {
 
     return () => {
       window.removeEventListener("resize", updateRect);
+      window.removeEventListener("resize", sizePool);
       hero.removeEventListener("mousemove", onMouseMove);
       hero.removeEventListener("mouseleave", hideAll);
       hero.removeEventListener("touchmove", onTouchMove);

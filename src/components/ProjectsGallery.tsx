@@ -96,10 +96,8 @@ const ProjectsGallery = () => {
                 className="group block reveal"
                 style={{ transitionDelay: `${(i % 2) * 100}ms` }}
               >
-                {/* Vertical 4:5 covers on phones (more presence), 3:2 from md up —
-                    capped to 54% of the viewport height so shorter laptop screens
-                    get a slightly wider crop instead of an oversized cover. */}
-                <div className="relative aspect-[4/5] md:aspect-[3/2] md:max-h-[54vh] overflow-hidden rounded-[4px] bg-secondary">
+                {/* Vertical 4:5 covers on phones (more presence), 3:2 from md up. */}
+                <div className="relative aspect-[4/5] md:aspect-[3/2] overflow-hidden rounded-[4px] bg-secondary">
                   <div
                     ref={(el) => (wrapperRefs.current[i] = el)}
                     className="absolute inset-x-0 -top-[5%] h-[110%] will-change-transform"
