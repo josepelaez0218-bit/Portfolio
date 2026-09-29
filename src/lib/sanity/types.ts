@@ -16,6 +16,10 @@ export interface SanitySectionBlock {
   videoCaption?: string;
 }
 
+export interface SanityHome {
+  heroTitle?: string;
+}
+
 export interface SanityAbout {
   photo?: SanityImageSource;
   bio: string;

@@ -1,5 +1,5 @@
 import { sanityClient } from "./client";
-import type { SanityAbout, SanityLabItem, SanityProject } from "./types";
+import type { SanityAbout, SanityHome, SanityLabItem, SanityProject } from "./types";
 
 const PROJECT_FIELDS = /* groq */ `
   _id,
@@ -40,6 +40,9 @@ export const fetchProjectBySlug = (slug: string) =>
     `*[_type == "project" && slug.current == $slug][0] { ${PROJECT_FIELDS} }`,
     { slug },
   );
+
+export const fetchHome = () =>
+  sanityClient.fetch<SanityHome | null>(`*[_type == "home" && _id == "home"][0] { heroTitle }`);
 
 export const fetchAbout = () =>
   sanityClient.fetch<SanityAbout | null>(

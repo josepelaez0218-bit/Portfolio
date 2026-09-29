@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import CustomCursor from "@/components/CustomCursor";
 import Footer from "@/components/Footer";
-import LabSection from "@/components/LabSection";
+import LabEditorial from "@/components/lab-essay/LabEditorial";
 import Nav from "@/components/Nav";
 
 const Lab = () => {
@@ -24,7 +24,7 @@ const Lab = () => {
       </Helmet>
       <CustomCursor />
       <Nav />
-      <LabSection as="h1" />
+      <LabEditorial />
       <Footer />
     </>
   );

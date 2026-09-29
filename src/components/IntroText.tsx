@@ -59,7 +59,7 @@ const IntroText = () => {
   }, [active]);
 
   return (
-    <section className="relative z-10 w-full bg-background px-6 pt-[104px] pb-[136px]">
+    <section className="relative z-10 w-full bg-background px-6 pt-[136px] pb-[168px] md:pt-[200px] md:pb-[232px]">
       <div className="max-w-[560px] mx-auto flex flex-col items-center text-center">
         <div className="flex items-center gap-3 mb-6">
           {ITEMS.map((item, i) => (
