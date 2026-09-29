@@ -7,9 +7,9 @@ import CoversTrack, { type CoversTrackHandle } from "./CoversTrack";
 // One pinned scene, choreographed in scrolled viewport-heights (vh):
 const TYPE_VH: [number, number] = [5, 100]; //   the question types itself out
 const REWRITE_VH = { startVh: 115, stepVh: 32 }; // then rewrites itself, one question per step
-const OUTRO_VH = 255; //                         eyebrow → new line, question fades up
-const RISE_VH: [number, number] = [270, 330]; //  covers rise in from the bottom
-const TRAVEL_VH = 335; //                        then travel sideways, 1px per px scrolled
+const OUTRO_VH = 255; //                         question and eyebrow slide out, new line types in
+const RISE_VH: [number, number] = [285, 340]; //  covers rise in from the bottom
+const TRAVEL_VH = 345; //                        then travel sideways, 1px per px scrolled
 const TAIL_VH = 10; //                           a beat at the end before unpinning
 
 // The question rewrites itself with the scroll (no hover/tap to get wrong).
@@ -40,13 +40,7 @@ const LabEditorial = () => {
     >
       <QuestionScene
         effect={REWRITE}
-        eyebrow={
-          <>
-            For me it always starts
-            <br />
-            with a simple question, for example
-          </>
-        }
+        eyebrowLines={["For me it always starts", "with a simple question, for example"]}
         question={"What if the\nwords react\nto the mouse?"}
         eyebrowClassName="font-serif text-foreground text-[19px] leading-[1.25] md:text-[30px] md:leading-[1.3] mb-10 md:mb-16"
         headingClassName="font-sans font-black uppercase text-foreground text-[12.4vw] leading-[0.96] md:text-[100px] md:leading-[0.95]"

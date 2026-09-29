@@ -177,13 +177,20 @@ export const makeRewrite =
     };
     const next = () => goTo((sentence + 1) % SENTENCES.length, 1);
 
+    // Back to the original question at once — also mid-roll: cancel pending
+    // clean-ups and drop every rolled-in/rolling-out word, not just the
+    // current one, so nothing is left stuck half-way.
     const restore = () => {
       sentence = 0;
       renderCounter();
+      timers.forEach(clearTimeout);
+      timers.length = 0;
+      lastSwap = 0;
       words.forEach((w, j) => {
         const s = state[j];
-        s.alt?.remove();
+        w.el.querySelectorAll(":scope > span:not(.inline-block)").forEach((n) => n.remove());
         s.alt = null;
+        s.rollingUntil = 0;
         s.text = original[j];
         lettersOf(ctx, w).forEach((l) => {
           l.style.visibility = "";

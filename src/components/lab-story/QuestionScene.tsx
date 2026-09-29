@@ -21,6 +21,11 @@ type Props = {
   effect: EffectDef;
   /** Small line above the question. */
   eyebrow?: ReactNode;
+  /**
+   * Alternative to `eyebrow`: explicit lines, each in its own mask, so the
+   * outro can slide them down out of sight line by line.
+   */
+  eyebrowLines?: string[];
   question?: string;
   eyebrowClassName?: string;
   headingClassName?: string;
@@ -35,10 +40,11 @@ type Props = {
   /** Typing range in scrolled viewport-heights (vh) instead of the default fraction. */
   typeVh?: [number, number];
   /**
-   * Outro, from `startVh` scrolled: the eyebrow cross-fades into `eyebrow`,
-   * the question fades up and out, and pointer reactions stop.
+   * Outro, from `startVh` scrolled: the question's lines slide down behind
+   * their masks, then the eyebrow's; then `eyebrow` types itself in its place
+   * like a typewriter. Pointer reactions stop. All scrubbed by the scroll.
    */
-  outro?: { eyebrow: ReactNode; startVh: number };
+  outro?: { eyebrow: string; startVh: number };
   /** Called on every scroll with the px scrolled into the pinned wrapper. */
   onScrollPx?: (scrolled: number, viewportHeight: number) => void;
   /** Extra layers inside the pinned stage (e.g. content revealed by the outro). */
@@ -52,6 +58,7 @@ const DEFAULT_HEADING_CLASS =
 const QuestionScene = ({
   effect,
   eyebrow = EYEBROW,
+  eyebrowLines,
   question = QUESTION,
   eyebrowClassName = DEFAULT_EYEBROW_CLASS,
   headingClassName = DEFAULT_HEADING_CLASS,
@@ -70,6 +77,7 @@ const QuestionScene = ({
   const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const eyebrowRef = useRef<HTMLParagraphElement>(null);
   const outroEyebrowRef = useRef<HTMLParagraphElement>(null);
+  const outroCaretRef = useRef<HTMLSpanElement>(null);
   const outroRef = useRef(0);
   // Latest values for the scroll handler (it's bound once).
   const opts = useRef({ typeVh, outro, onScrollPx });
@@ -144,6 +152,49 @@ const QuestionScene = ({
       caret.style.height = `${l.offsetHeight}px`;
     };
 
+    // ── Outro ──────────────────────────────────────────────────────────────
+    const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+    const wordEls = () => [...heading.querySelectorAll<HTMLElement>(":scope > span > span.inline-block")];
+    let outroApplied = false;
+    const applyOutro = (sVh: number, s0: number) => {
+      outroRef.current = sVh > s0 ? 1 : 0;
+      const active = sVh > s0;
+
+      // 1. The question, line by line, slides down behind each word's mask.
+      const ws = wordEls();
+      const tops = [...new Set(ws.map((w) => w.offsetTop))].sort((a, b) => a - b);
+      ws.forEach((w) => {
+        const li = tops.indexOf(w.offsetTop);
+        const v = easeInOut(range(sVh, [s0 + li * 3, s0 + 14 + li * 3]));
+        if (active) w.style.clipPath = "inset(0 -0.6em)";
+        else if (outroApplied) w.style.clipPath = "";
+        [...w.children].forEach((c) => {
+          (c as HTMLElement).style.transform = v > 0 ? `translateY(${(v * 112).toFixed(1)}%)` : active || outroApplied ? "" : (c as HTMLElement).style.transform;
+        });
+      });
+
+      // 2. Then the eyebrow's lines do the same.
+      eyebrowRef.current?.querySelectorAll<HTMLElement>("[data-mask-line]").forEach((line, i) => {
+        const v = easeInOut(range(sVh, [s0 + 6 + i * 3, s0 + 20 + i * 3]));
+        line.style.transform = v > 0 ? `translateY(${(v * 112).toFixed(1)}%)` : "";
+      });
+
+      // 3. And the new line types itself in their place.
+      const chars = outroEyebrowRef.current ? [...outroEyebrowRef.current.querySelectorAll<HTMLElement>("[data-char]")] : [];
+      const t = range(sVh, [s0 + 22, s0 + 38]);
+      const n = Math.round(t * chars.length);
+      chars.forEach((c, i) => (c.style.opacity = i < n ? "1" : "0"));
+      const oc = outroCaretRef.current;
+      if (oc && chars.length) {
+        oc.dataset.state = t > 0 && t < 1 ? "typing" : "hidden";
+        const last = chars[Math.max(n - 1, 0)];
+        oc.style.left = `${last.offsetLeft + (n > 0 ? last.offsetWidth : 0)}px`;
+        oc.style.top = `${last.offsetTop}px`;
+        oc.style.height = `${last.offsetHeight}px`;
+      }
+      outroApplied = active;
+    };
+
     const applyScroll = () => {
       const { p, scrolled, vh, sVh } = readScroll();
       const { typeVh: tv, outro: out, onScrollPx: cb } = opts.current;
@@ -154,20 +205,7 @@ const QuestionScene = ({
       caret.dataset.state = doneRef.current ? "hidden" : "typing";
       placeCaret(typed);
 
-      // Outro: eyebrow cross-fade, question fades up and out.
-      const k = out ? range(sVh, [out.startVh, out.startVh + 20]) : 0;
-      const q = out ? range(sVh, [out.startVh + 5, out.startVh + 35]) : 0;
-      outroRef.current = k;
-      if (eyebrowRef.current && outroEyebrowRef.current) {
-        eyebrowRef.current.style.opacity = (1 - k).toFixed(3);
-        eyebrowRef.current.style.transform = `translateY(${(-k * 10).toFixed(1)}px)`;
-        outroEyebrowRef.current.style.opacity = k.toFixed(3);
-        outroEyebrowRef.current.style.transform = `translateY(${((1 - k) * 10).toFixed(1)}px)`;
-      }
-      if (out) {
-        heading.style.opacity = (1 - q).toFixed(3);
-        heading.style.transform = q > 0 ? `translateY(${(-q * 6).toFixed(2)}vh)` : "";
-      }
+      if (out) applyOutro(sVh, out.startVh);
       cb?.(scrolled, vh);
     };
 
@@ -267,11 +305,24 @@ const QuestionScene = ({
         {/* Eyebrow and its outro replacement share one grid cell (same spot). */}
         <div className={`grid ${eyebrowClassName} animate-fade-up`}>
           <p ref={eyebrowRef} className="[grid-area:1/1]">
-            {eyebrow}
+            {eyebrowLines
+              ? eyebrowLines.map((line, i) => (
+                  <span key={i} className="block overflow-hidden">
+                    <span data-mask-line className="block will-change-transform">
+                      {line}
+                    </span>
+                  </span>
+                ))
+              : eyebrow}
           </p>
           {outro && (
-            <p ref={outroEyebrowRef} className="[grid-area:1/1]" style={{ opacity: 0 }}>
-              {outro.eyebrow}
+            <p ref={outroEyebrowRef} aria-label={outro.eyebrow} className="[grid-area:1/1] self-center relative">
+              {Array.from(outro.eyebrow).map((ch, i) => (
+                <span key={i} data-char aria-hidden="true" style={{ opacity: 0 }}>
+                  {ch}
+                </span>
+              ))}
+              <span ref={outroCaretRef} aria-hidden="true" className="lab-caret absolute w-[2px] bg-foreground" />
             </p>
           )}
         </div>

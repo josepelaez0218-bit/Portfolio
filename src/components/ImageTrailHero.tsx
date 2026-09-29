@@ -265,7 +265,7 @@ const ImageTrailHero = () => {
         <div
           key={i}
           ref={(el) => (poolRefs.current[i] = el)}
-          className="absolute top-0 left-0 opacity-0 pointer-events-none overflow-hidden shadow-[0_12px_32px_rgba(0,0,0,0.12)] will-change-transform"
+          className="absolute top-0 left-0 opacity-0 pointer-events-none overflow-hidden rounded-[4px] shadow-[0_12px_32px_rgba(0,0,0,0.12)] will-change-transform"
         >
           <img src={SRCS[i]} alt="" draggable={false} className="w-full h-full object-cover pointer-events-none select-none" />
         </div>
