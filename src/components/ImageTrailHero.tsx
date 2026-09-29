@@ -11,10 +11,10 @@ const SRCS = [
 
 // Source images are all 4:5 portrait — keep the pool boxes close to that
 // ratio so object-cover doesn't crop them aggressively.
-// Desktop sizes are tuned for a ~1300px-tall viewport (a 2K screen) and
-// scale down with shorter viewports (e.g. laptops) so they keep the same
-// share of the hero instead of swamping it.
-const DESKTOP_REFERENCE_HEIGHT = 1300;
+// Desktop sizes are tuned for a 2K screen and scale down gently on shorter
+// viewports (e.g. laptops) so they don't swamp the hero — full size from
+// 1100px tall up, ~0.78 on a 14" MacBook Pro.
+const DESKTOP_REFERENCE_HEIGHT = 1100;
 const MIN_DESKTOP_SCALE = 0.55;
 const DIMS = [
   { w: 440, h: 550 },
