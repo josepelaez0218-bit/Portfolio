@@ -25,6 +25,11 @@ type Props = {
   eyebrowClassName?: string;
   headingClassName?: string;
   headingStyle?: CSSProperties;
+  /**
+   * Word indices after which to break the line on small screens. When set,
+   * the question's "\n" breaks apply from the md breakpoint up only.
+   */
+  mobileBreaks?: number[];
   /** Height of the pinned wrapper (CSS length); defaults to 320vh. */
   height?: string;
   /** Typing range in scrolled viewport-heights (vh) instead of the default fraction. */
@@ -51,6 +56,7 @@ const QuestionScene = ({
   eyebrowClassName = DEFAULT_EYEBROW_CLASS,
   headingClassName = DEFAULT_HEADING_CLASS,
   headingStyle = { letterSpacing: "-0.01em" },
+  mobileBreaks,
   height,
   typeVh,
   outro,
@@ -292,7 +298,23 @@ const QuestionScene = ({
                   );
                 })}
               </span>
-              {w < words.length - 1 && (breaks.has(w) ? <br /> : " ")}
+              {w < words.length - 1 &&
+                (mobileBreaks ? (
+                  <>
+                    {" "}
+                    {breaks.has(w) && mobileBreaks.includes(w) ? (
+                      <br />
+                    ) : breaks.has(w) ? (
+                      <br className="hidden md:inline" />
+                    ) : mobileBreaks.includes(w) ? (
+                      <br className="md:hidden" />
+                    ) : null}
+                  </>
+                ) : breaks.has(w) ? (
+                  <br />
+                ) : (
+                  " "
+                ))}
             </span>
           ))}
           <span

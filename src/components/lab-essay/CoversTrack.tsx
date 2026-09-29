@@ -84,7 +84,7 @@ const CoversTrack = forwardRef<CoversTrackHandle, Props>(({ riseVh, travelStartV
 
   return (
     <div className="absolute inset-x-0 top-[48vh] md:top-[36vh] pointer-events-none" aria-label="Lab pieces" role="list">
-      <div ref={trackRef} className="flex items-start gap-4 md:gap-6 pl-6 md:pl-8 pr-6 md:pr-8 will-change-transform w-max">
+      <div ref={trackRef} className="flex items-start gap-2 px-3 will-change-transform w-max">
         {items.map((item, i) => (
           <figure
             key={item._id}

@@ -43,19 +43,28 @@ const SENTENCES = [
 const ROLL_MS = 520;
 const ROLL_STAGGER_MS = 70;
 const ROLL_EASE = "cubic-bezier(.2,.8,.2,1)";
+/** Scroll mode: minimum time a question stays before the next rewrite. */
+const DWELL_MS = 900;
 
 type RewriteOptions = {
-  /** What rewrites the question: entering a word, or clicking/tapping one. */
-  trigger: "hover" | "click";
+  /**
+   * What rewrites the question: entering a word, clicking/tapping one, or
+   * the scroll itself (one question per `scroll.stepVh` of scrolling).
+   */
+  trigger: "hover" | "click" | "scroll";
+  /** Scroll mode: scrolled vh (into the pinned wrapper) where the rewrites start, and vh per question. */
+  scroll?: { startVh: number; stepVh: number };
   /** Hovered word also thins from black to hairline (the Weight effect). */
   weight?: boolean;
   /** Show a small "01 / 05" counter under the question. */
   counter?: boolean;
   /** Rewrite on its own after this long without interaction (ms). */
   idleMs?: number;
+  /** On touch screens, a small line under the question inviting a tap. */
+  touchHint?: string;
 };
 
-const makeRewrite =
+export const makeRewrite =
   (opts: RewriteOptions) =>
   (ctx: EffectContext): Effect => {
     const words = groupWords(ctx.letters);
@@ -97,8 +106,11 @@ const makeRewrite =
       el.style.transform = to;
     };
 
-    /** Roll word j over to `text` (the original text brings its letters back). */
-    const swapTo = (j: number, text: string, delay: number) => {
+    /**
+     * Roll word j over to `text` (the original text brings its letters back).
+     * dir 1 rolls upwards (forwards), -1 downwards (back).
+     */
+    const swapTo = (j: number, text: string, delay: number, dir: 1 | -1 = 1) => {
       const w = words[j];
       const s = state[j];
       if (s.text === text) return;
@@ -132,8 +144,8 @@ const makeRewrite =
       s.text = text;
       s.rollingUntil = performance.now() + ROLL_MS + delay + 30;
 
-      outgoing.forEach((o) => roll(o, "translateY(0)", "translateY(-105%)", delay));
-      incoming.forEach((o) => roll(o, "translateY(105%)", "translateY(0)", delay));
+      outgoing.forEach((o) => roll(o, "translateY(0)", `translateY(${-105 * dir}%)`, delay));
+      incoming.forEach((o) => roll(o, `translateY(${105 * dir}%)`, "translateY(0)", delay));
       el.style.transition = "none";
       el.style.width = `${fromW}px`;
       void el.offsetWidth;
@@ -152,17 +164,18 @@ const makeRewrite =
       );
     };
 
-    const next = () => {
-      if (!usable || performance.now() - lastSwap < ROLL_MS + ROLL_STAGGER_MS * 4 + 120) return;
-      sentence = (sentence + 1) % SENTENCES.length;
+    const goTo = (index: number, dir: 1 | -1, guardMs = ROLL_MS + ROLL_STAGGER_MS * 4 + 120) => {
+      if (!usable || performance.now() - lastSwap < guardMs) return;
+      sentence = index;
       let changed = 0;
       SENTENCES[sentence].forEach((text, j) => {
-        if (state[j].text !== text) swapTo(j, text, changed++ * ROLL_STAGGER_MS);
+        if (state[j].text !== text) swapTo(j, text, changed++ * ROLL_STAGGER_MS, dir);
       });
       lastSwap = performance.now();
       lastActivity = lastSwap;
       renderCounter();
     };
+    const next = () => goTo((sentence + 1) % SENTENCES.length, 1);
 
     const restore = () => {
       sentence = 0;
@@ -183,14 +196,29 @@ const makeRewrite =
       });
     };
 
-    // Click mode: any click/tap on a word. Hover mode: taps count too, since
-    // a quick touch can start and end between two animation frames.
+    // Click mode: any click on a word. On touch screens there's no hover, and
+    // dragging a finger across the words means scrolling — so there a tap
+    // anywhere on the question (a real click, never a scroll) rewrites it.
     const onDown = (e: PointerEvent) => {
-      if (!ctx.isDone()) return;
-      if (opts.trigger === "hover" && e.pointerType === "mouse") return;
+      if (opts.trigger !== "click" || !ctx.isDone()) return;
       if (words.some((w) => w.el.contains(e.target as Node))) next();
     };
+    const onTap = () => {
+      if (opts.trigger === "hover" && touch && ctx.isDone()) next();
+    };
     ctx.stage.addEventListener("pointerdown", onDown);
+    ctx.heading.addEventListener("click", onTap);
+
+    // Touch hint lives inside the heading so it fades out with it.
+    let hint: HTMLSpanElement | null = null;
+    if (touch && opts.touchHint && usable) {
+      hint = document.createElement("span");
+      hint.setAttribute("aria-hidden", "true");
+      hint.textContent = opts.touchHint;
+      hint.style.cssText =
+        "position:absolute;left:0;right:0;top:100%;margin-top:1.75rem;font:400 13px/1.4 Inter,sans-serif;text-transform:none;letter-spacing:0;color:hsl(var(--foreground) / 0.6);opacity:0;transition:opacity .5s ease;pointer-events:none";
+      ctx.heading.appendChild(hint);
+    }
 
     let wasDone = false;
     return {
@@ -200,10 +228,23 @@ const makeRewrite =
         if (!wasDone && done) lastActivity = performance.now();
         wasDone = done;
         if (counter) counter.style.opacity = done ? "1" : "0";
+        if (hint) hint.style.opacity = done ? "1" : "0";
+
+        // Scroll mode: the scroll position picks the question, but the
+        // animation keeps its own pace — a question never changes sooner
+        // than DWELL_MS after the last one. Scrolling faster than that skips
+        // the in-between questions and lands straight on the one for where
+        // you are, so fast scrollers aren't slowed down and nothing flickers.
+        if (opts.trigger === "scroll" && opts.scroll && done && usable) {
+          const section = ctx.stage.parentElement as HTMLElement;
+          const sVh = (-section.getBoundingClientRect().top / window.innerHeight) * 100;
+          const target = Math.min(Math.max(Math.floor((sVh - opts.scroll.startVh) / opts.scroll.stepVh) + 1, 0), SENTENCES.length - 1);
+          if (target !== sentence) goTo(target, target > sentence ? 1 : -1, DWELL_MS);
+        }
 
         const { k, over } = track(() => {
           lastActivity = performance.now();
-          if (opts.trigger === "hover") next();
+          if (opts.trigger === "hover" && !touch) next();
         });
         if (over.some(Boolean)) lastActivity = performance.now();
 
@@ -226,9 +267,11 @@ const makeRewrite =
       },
       dispose: () => {
         ctx.stage.removeEventListener("pointerdown", onDown);
+        ctx.heading.removeEventListener("click", onTap);
         timers.forEach(clearTimeout);
         restore();
         counter?.remove();
+        hint?.remove();
       },
     };
   };
@@ -237,7 +280,7 @@ const rewrite: EffectDef = {
   id: 1,
   name: "Rewrite",
   hint: "Hover a word — the question rewrites itself",
-  create: makeRewrite({ trigger: "hover" }),
+  create: makeRewrite({ trigger: "hover", touchHint: "Tap the question to ask another." }),
 };
 
 const question: EffectDef = {

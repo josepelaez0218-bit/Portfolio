@@ -79,15 +79,15 @@ const ProjectsGallery = () => {
   return (
     <section
       id="work"
-      className="relative z-10 w-full bg-background px-6 pb-24 md:pb-32"
+      className="relative z-10 w-full bg-background px-3 pb-24 md:pb-32"
     >
-      <div className="max-w-[1400px] min-[1600px]:max-w-[1900px] mx-auto">
+      <div className="max-w-[1900px] mx-auto">
         {!loading && projects.length === 0 ? (
           <p className="text-[14px] font-light text-foreground/50">
             No projects published yet.
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-10 md:gap-y-12">
             {projects.map((project, i) => (
               <Link
                 key={project._id}
@@ -96,7 +96,10 @@ const ProjectsGallery = () => {
                 className="group block reveal"
                 style={{ transitionDelay: `${(i % 2) * 100}ms` }}
               >
-                <div className="relative aspect-[3/2] overflow-hidden rounded-[4px] bg-secondary">
+                {/* Vertical 4:5 covers on phones (more presence), 3:2 from md up —
+                    capped to 54% of the viewport height so shorter laptop screens
+                    get a slightly wider crop instead of an oversized cover. */}
+                <div className="relative aspect-[4/5] md:aspect-[3/2] md:max-h-[54vh] overflow-hidden rounded-[4px] bg-secondary">
                   <div
                     ref={(el) => (wrapperRefs.current[i] = el)}
                     className="absolute inset-x-0 -top-[5%] h-[110%] will-change-transform"
@@ -111,12 +114,19 @@ const ProjectsGallery = () => {
                         className="w-full h-full object-cover will-change-transform transition-transform duration-[2400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
                       />
                     ) : (
-                      <img
-                        src={urlForImage(project.cover).width(1200).quality(80).url()}
-                        alt={project.title}
-                        loading="lazy"
-                        className="w-full h-full object-cover will-change-transform transition-transform duration-[2400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
-                      />
+                      <picture>
+                        {/* Phones get a vertical crop that honours the cover's hotspot. */}
+                        <source
+                          media="(max-width: 767px)"
+                          srcSet={urlForImage(project.cover).width(900).height(1240).fit("crop").quality(80).url()}
+                        />
+                        <img
+                          src={urlForImage(project.cover).width(1200).quality(80).url()}
+                          alt={project.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover will-change-transform transition-transform duration-[2400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+                        />
+                      </picture>
                     )}
                   </div>
                   {project.coverOverlay && (
@@ -128,13 +138,12 @@ const ProjectsGallery = () => {
                     />
                   )}
                 </div>
-                <div className="mt-3 flex items-baseline justify-between gap-4">
-                  <h2 className="text-[14px] font-normal text-foreground tracking-[0.01em]">
-                    {project.title}
-                  </h2>
-                  <span className="text-[14px] font-light text-foreground/50 tracking-[0.01em]">
-                    {(project.tags ?? []).join(" · ")}
-                  </span>
+                {/* Title and tags read as one line, left-aligned — tone tells them apart. */}
+                <div className="mt-3 text-[14px] tracking-[0.01em]">
+                  <h2 className="inline font-normal text-foreground">{project.title}</h2>
+                  {(project.tags ?? []).length > 0 && (
+                    <span className="font-light text-foreground/50"> {(project.tags ?? []).join(" · ")}</span>
+                  )}
                 </div>
               </Link>
             ))}
