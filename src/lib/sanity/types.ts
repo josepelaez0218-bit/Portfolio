@@ -30,6 +30,9 @@ export interface SanityAbout {
 export interface SanityLabItem {
   _id: string;
   image: SanityImageSource;
+  videoUrl?: string;
+  /** Width / height of the piece (from the image's metadata). */
+  aspect?: number;
   alt: string;
   caption?: string;
 }

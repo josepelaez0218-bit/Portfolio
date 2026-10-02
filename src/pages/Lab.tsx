@@ -24,7 +24,7 @@ const Lab = () => {
       </Helmet>
       <CustomCursor />
       <Nav />
-      <LabEditorial />
+      <LabEditorial mode="page" />
       <Footer />
     </>
   );

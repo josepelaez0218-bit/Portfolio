@@ -51,5 +51,5 @@ export const fetchAbout = () =>
 
 export const fetchLabItems = () =>
   sanityClient.fetch<SanityLabItem[]>(
-    `*[_type == "labItem"] | order(order asc) { _id, image, alt, caption }`,
+    `*[_type == "labItem"] | order(order asc) { _id, image, "aspect": image.asset->metadata.dimensions.aspectRatio, "videoUrl": video.asset->url, alt, caption }`,
   );

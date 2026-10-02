@@ -1,43 +1,19 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { fetchLabItems } from "@/lib/sanity/queries";
-import { urlForImage } from "@/lib/sanity/image";
-import type { SanityLabItem } from "@/lib/sanity/types";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { ease, prefersReducedMotion, range } from "./lib";
+import { CARD_CLASS, LabMedia, useLabItems, type GalleryHandle, type GalleryProps } from "./galleries/shared";
 
-export type CoversTrackHandle = {
-  /** Drive the track from the pinned scene's scroll (px scrolled, viewport height). */
-  update: (scrolled: number, vh: number) => void;
-};
-
-type Props = {
-  /** Scrolled vh over which the covers rise in from the bottom. */
-  riseVh: [number, number];
-  /** Scrolled vh at which the horizontal travel starts (1px scroll = 1px travel). */
-  travelStartVh: number;
-  /** Reports how far (px) the track has to travel, so the scene can size itself. */
-  onTravel: (px: number) => void;
-};
+export type CoversTrackHandle = GalleryHandle;
 
 /**
  * The Lab covers, living inside the question's pinned stage: they rise in
  * from below (staggered) as the answers to the question, then travel
  * horizontally with the scroll.
  */
-const CoversTrack = forwardRef<CoversTrackHandle, Props>(({ riseVh, travelStartVh, onTravel }, ref) => {
-  const [items, setItems] = useState<SanityLabItem[]>([]);
+const CoversTrack = forwardRef<GalleryHandle, GalleryProps>(({ riseVh, travelStartVh, onTravel }, ref) => {
+  const items = useLabItems();
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const travel = useRef(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchLabItems()
-      .then((data) => !cancelled && setItems(data))
-      .catch((err) => console.error("Failed to load lab items from Sanity:", err));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // Measure how far the track overflows the viewport.
   useEffect(() => {
@@ -83,22 +59,19 @@ const CoversTrack = forwardRef<CoversTrackHandle, Props>(({ riseVh, travelStartV
   if (!items.length) return null;
 
   return (
-    <div className="absolute inset-x-0 top-[48vh] md:top-[36vh] pointer-events-none" aria-label="Lab pieces" role="list">
-      <div ref={trackRef} className="flex items-start gap-2 px-3 will-change-transform w-max">
+    // Once the question has gone the covers own the stage: vertically centred,
+    // almost full height on desktop, almost full width on phones.
+    <div className="absolute inset-0 flex items-center pointer-events-none" aria-label="Lab pieces" role="list">
+      <div ref={trackRef} className="flex items-center gap-2 px-3 will-change-transform w-max">
         {items.map((item, i) => (
           <figure
             key={item._id}
             ref={(el) => (cardRefs.current[i] = el)}
             role="listitem"
-            className="shrink-0 overflow-hidden rounded-[4px] bg-background border border-white/10 h-[42vh] md:h-[52vh] aspect-square"
+            className={`shrink-0 ${CARD_CLASS} w-[min(88vw,72vh)] md:w-auto md:h-[min(80vh,calc(100vw-24px))] aspect-square`}
             style={{ opacity: 0 }}
           >
-            <img
-              src={urlForImage(item.image).width(900).quality(85).url()}
-              alt={item.alt}
-              loading="lazy"
-              className="w-full h-full object-contain"
-            />
+            <LabMedia item={item} />
           </figure>
         ))}
       </div>
