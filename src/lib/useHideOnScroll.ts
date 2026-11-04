@@ -1,27 +1,45 @@
 import { useEffect, useState } from "react";
 
-/** True while scrolling down (past the top); false as soon as you scroll back up. */
+/**
+ * True once the visitor scrolls down past the top; false again only when they
+ * scroll back up themselves (wheel, finger or keys) or reach the top. Moves the
+ * page makes on its own — the magnetic snap between sheets — don't count.
+ */
 export const useHideOnScroll = (threshold = 120) => {
   const [hidden, setHidden] = useState(false);
   useEffect(() => {
-    let lastY = window.scrollY;
-    let raf: number | null = null;
-    const check = () => {
-      raf = null;
-      const y = window.scrollY;
-      const dy = y - lastY;
-      if (y < threshold) setHidden(false);
-      else if (dy > 6) setHidden(true);
-      else if (dy < -6) setHidden(false);
-      if (Math.abs(dy) > 6 || y < threshold) lastY = y;
+    const atTop = () => window.scrollY < threshold;
+    const intent = (dir: number) => {
+      if (atTop()) return setHidden(false);
+      if (dir > 0) setHidden(true);
+      else if (dir < 0) setHidden(false);
     };
-    const onScroll = () => {
-      if (raf === null) raf = requestAnimationFrame(check);
+    let touchY = 0;
+    const onWheel = (e: WheelEvent) => Math.abs(e.deltaY) > 2 && intent(e.deltaY);
+    const onTouchStart = (e: TouchEvent) => (touchY = e.touches[0].clientY);
+    const onTouchMove = (e: TouchEvent) => {
+      const y = e.touches[0].clientY;
+      if (Math.abs(y - touchY) > 8) {
+        intent(touchY - y);
+        touchY = y;
+      }
     };
+    const DOWN = ["ArrowDown", "PageDown", " ", "End"];
+    const UP = ["ArrowUp", "PageUp", "Home"];
+    const onKey = (e: KeyboardEvent) => (DOWN.includes(e.key) ? intent(1) : UP.includes(e.key) ? intent(-1) : undefined);
+    const onScroll = () => atTop() && setHidden(false);
+
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("keydown", onKey);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("keydown", onKey);
       window.removeEventListener("scroll", onScroll);
-      if (raf !== null) cancelAnimationFrame(raf);
     };
   }, [threshold]);
   return hidden;
