@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { fetchProjects } from "@/lib/sanity/queries";
 import { urlForImage } from "@/lib/sanity/image";
 import type { SanityProject } from "@/lib/sanity/types";
+import { localizeProject, useLang, useT } from "@/lib/i18n";
 
 const pad = (i: number) => String(i + 1).padStart(2, "0");
 
@@ -20,7 +21,10 @@ const Cover = ({ p }: { p: SanityProject }) =>
  * phones (no hover) each cover sits under its name.
  */
 const ProjectsGallery = () => {
-  const [projects, setProjects] = useState<SanityProject[]>([]);
+  const [raw, setProjects] = useState<SanityProject[]>([]);
+  const lang = useLang();
+  const t = useT();
+  const projects = raw.map((p) => localizeProject(p, lang));
   const [loading, setLoading] = useState(true);
   const [hover, setHover] = useState<number | null>(null);
   const preview = useRef<HTMLDivElement>(null);
@@ -68,19 +72,21 @@ const ProjectsGallery = () => {
       {!loading && projects.length === 0 ? (
         <p className="px-5 md:px-10 text-[14px] font-normal text-foreground/60">No projects published yet.</p>
       ) : (
-        <div className="px-5 md:px-10 pt-0 pb-20 md:pb-32" onMouseLeave={() => setHover(null)}>
+        <div className="px-5 md:px-10 pt-16 pb-20 md:pt-24 md:pb-32" onMouseLeave={() => setHover(null)}>
+          {/* Same label as “Let’s talk” in the closing section */}
+          <p className="mb-5 text-[14px] font-medium tracking-[0.01em] text-foreground/70">{t("projects")}</p>
           <ol className="border-t border-foreground/15">
             {projects.map((p, i) => (
               <li key={p._id} className="border-b border-foreground/15">
                 <Link
                   to={`/work/${p.slug}`}
                   onMouseEnter={() => setHover(i)}
-                  className={`group grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_auto] items-baseline gap-x-4 py-5 md:py-7 transition-colors duration-300 ${
+                  className={`group grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_auto] items-baseline gap-x-4 py-4 md:py-5 transition-colors duration-300 ${
                     hover !== null && hover !== i ? "text-foreground/25" : "text-foreground"
                   }`}
                 >
                   <span className="text-[14px] text-foreground/60 tabular-nums tracking-[0.01em]">{pad(i)}</span>
-                  <h2 className="font-sans font-black uppercase leading-[0.95] tracking-[-0.01em] text-[clamp(2rem,6vw,6.5rem)] transition-transform duration-500 group-hover:translate-x-3">
+                  <h2 className="font-sans font-bold uppercase leading-[0.95] tracking-[-0.02em] text-[clamp(2rem,4.2vw,4.75rem)] transition-transform duration-500 group-hover:translate-x-3">
                     {p.title}
                   </h2>
                   <span className="hidden md:block text-[14px] text-foreground/60">{(p.tags ?? []).join(" · ")}</span>

@@ -1,57 +1,67 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useT } from "@/lib/i18n";
 
 const EMAIL = "josepelaez0218@gmail.com";
 
+const madridTime = () =>
+  new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit" }).format(new Date());
+
 /**
- * Closing block on every page: who I am, in the same serif as the intro,
- * and the way to start a project (same pill as “Start a project” under the
- * hero). Text stays at 400 weight and ≥ 4.5:1 contrast; links get a
- * finger-sized hit area.
+ * The end of every page, in black: who, how to write, where to go,
+ * Madrid's time, and the small print.
  */
 const Footer = () => {
+  const t = useT();
   const year = new Date().getFullYear();
+  const [time, setTime] = useState(madridTime);
+  useEffect(() => {
+    const id = setInterval(() => setTime(madridTime()), 15000);
+    return () => clearInterval(id);
+  }, []);
+
+  const LINK = "text-[14px] text-white/70 tracking-[0.01em] transition-colors duration-300 hover:text-white";
+  const HEAD = "text-[14px] font-medium text-white/50 tracking-[0.01em]";
 
   return (
-    <footer className="relative z-10 w-full bg-background text-foreground px-5 md:px-10 pt-20 pb-8 md:pt-32 md:pb-10 border-t border-border/60">
-      <div className="max-w-[1900px] mx-auto flex flex-col gap-16 md:gap-24">
-        <div className="grid gap-10 md:grid-cols-12 md:gap-6 md:items-end">
-          <div className="md:col-span-7 flex flex-col gap-5">
-            <p className="text-[14px] font-medium tracking-[0.01em] text-foreground/70">Jose Peláez</p>
-            <p className="text-lead text-foreground max-w-[34ch] text-balance">
-              I’m Jose, a product and brand designer based in Madrid. I design brands, websites and digital products, and
-              build the front end that ships them — this site included.
-            </p>
-            <p className="text-[14px] text-foreground/70 tracking-[0.01em] max-w-[52ch]">
-              Day to day I design product interfaces at Seedtag. Alongside that, I take on brand and web projects directly.
+    <footer className="relative z-10 w-full bg-[#0b0b0b] text-white">
+      <div className="px-5 md:px-10 pt-16 pb-8 md:pt-24 md:pb-10 flex flex-col gap-16 md:gap-24">
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-x-6 gap-y-10">
+          <div className="col-span-2 md:col-span-6 flex flex-col gap-2">
+            <p className="text-[14px] font-medium tracking-[0.01em]">Jose Peláez</p>
+            <p className="text-[14px] text-white/70 tracking-[0.01em] max-w-[40ch]">
+              {t("footerBlurb")}
             </p>
           </div>
-
-          <div className="md:col-span-5 flex flex-col items-start md:items-end gap-4">
-            <a
-              href={`mailto:${EMAIL}?subject=New%20project`}
-              className="inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-transform duration-300 hover:scale-[1.04]"
-            >
-              Start a project <span aria-hidden="true">→</span>
-            </a>
-            <a
-              href={`mailto:${EMAIL}`}
-              className="py-2 text-[14px] text-foreground/70 tracking-[0.01em] transition-colors duration-300 hover:text-foreground"
-            >
+          <div className="md:col-span-2 flex flex-col gap-3">
+            <p className={HEAD}>{t("contact")}</p>
+            <a href={`mailto:${EMAIL}`} className={`${LINK} break-all`}>
               {EMAIL}
             </a>
+            <Link to="/#start" onClick={() => window.dispatchEvent(new Event("open-brief"))} className={LINK}>
+              {t("startProject")}
+            </Link>
+          </div>
+          <div className="md:col-span-2 flex flex-col gap-3">
+            <p className={HEAD}>{t("navigate")}</p>
+            <Link to="/#work" className={LINK}>
+              {t("projects")}
+            </Link>
+            <Link to="/#contact" className={LINK}>
+              {t("contact")}
+            </Link>
+          </div>
+          <div className="md:col-span-2 flex flex-col gap-3">
+            <p className={HEAD}>Madrid</p>
+            <p className="text-[14px] text-white/70 tracking-[0.01em] tabular-nums">{time}</p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-6 text-[14px] tracking-[0.01em]">
-          <p className="text-foreground/60">© {year} Jose Peláez · Madrid</p>
-          <nav className="flex items-center gap-2">
-            <Link
-              to="/#work"
-              className="px-2 py-3 text-foreground/70 transition-colors duration-300 hover:text-foreground"
-            >
-              Work
-            </Link>
-          </nav>
+        <div className="flex items-center justify-between gap-6 text-[14px] tracking-[0.01em] text-white/50">
+          <p>© {year} Jose Peláez</p>
+          <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="py-2 transition-colors duration-300 hover:text-white">
+            {t("backToTop")} ↑
+          </button>
         </div>
       </div>
     </footer>

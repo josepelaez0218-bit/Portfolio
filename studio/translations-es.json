@@ -1,0 +1,161 @@
+{
+  "project-seedtag-design-system": {
+    "descriptionEs": "Un sistema de diseño para las herramientas internas de Seedtag: componentes, patrones y tono compartidos por todas las aplicaciones internas, incluida Liz Agent.",
+    "tagsEs": ["Web", "Sistema de diseño"],
+    "sections": {
+      "context": {
+        "labelEs": "Contexto",
+        "bodyEs": "Seedtag estaba en pleno rebranding: una identidad nueva sustituía al azul marino oscuro y al logotipo con serifa que aún llevaba cada herramienta interna, como el Design Studio que se ve aquí. Eso le dio al sistema de diseño un segundo objetivo además de la coherencia: todas las herramientas tendrían que rehacerse con la nueva marca en algún momento, y hacerlo una sola vez, como un sistema compartido, evitaba rediseñar el mismo interruptor y la misma etiqueta seis veces.\n\nLas herramientas internas de Seedtag (paneles de análisis, interfaces de agentes, ventanas de configuración de anuncios) las construían equipos distintos por separado, y cada uno hacía su propia versión de un interruptor, una etiqueta o una ventana modal. El sistema de diseño pasó a ser la fuente común de todo ello: un único conjunto de componentes, documentado con cada estado y variante, usado igual en un panel de analítica claro que en un panel de configuración oscuro dentro del producto. Liz Agent, la herramienta de investigación con IA, fue uno de los primeros productos construidos por completo sobre él.",
+        "alts": { "img-pre-rebrand": "Seedtag Design Studio antes del rebranding: tema azul marino oscuro y logotipo con serifa" }
+      },
+      "problem": {
+        "labelEs": "Problema",
+        "bodyEs": "Todos los equipos que creaban una herramienta en Seedtag necesitaban las mismas piezas (un interruptor, una etiqueta de estado, una forma de previsualizar un anuncio en contexto) y cada uno las construía de manera ligeramente distinta. Una etiqueta de «Success» en una herramienta no se parecía en nada a la de otra; una ventana de configuración de DCO hecha desde cero tenía que volver a resolver espaciados, estados y jerarquía que otra herramienta ya había resuelto. Nada se reutilizaba, así que nada se mantenía coherente."
+      },
+      "solution": {
+        "labelEs": "Solución",
+        "bodyEs": "En la práctica, el sistema es la misma ventana oscura y redondeada y el mismo selector tipo radio detrás de Contextual DCO y Geolocation DCO (dos formas en que un anuncio se adapta: al tema que lee la persona o a su ubicación), y la misma carcasa de previsualización por dispositivo (pestañas In Article, In Image, In Screen, los mismos controles de reinicio y DCO) detrás de la herramienta de previsualización de creatividades. Liz Agent funciona con la variante clara de esos mismos componentes.\n\nSeedtag Studio (el escaparate público de formatos y plantillas de anuncios) y las pantallas de diagnóstico de Mosaic llevan la misma identidad a públicos muy distintos, con el mismo símbolo y el mismo lenguaje de tarjetas y botones, tanto si la superficie es interna como si es pública.",
+        "alts": {
+          "img-seedtag-studio": "Seedtag Studio: escaparate público de formatos de anuncio y plantillas descargables",
+          "img-seedtag-studio-slide": "Diapositiva de portada de Seedtag Studio: «The power of intentionality»",
+          "img-mosaic-quality-findings": "Mosaic: pantallas de Creative Quality Findings y Emotional Impact & Resonance"
+        }
+      },
+      "documentation": {
+        "labelEs": "Documentación",
+        "bodyEs": "Cada componente se entrega documentado así: cada estado (por defecto, deshabilitado, foco), cada tamaño y cada variante. El interruptor define el estado por defecto frente al deshabilitado, los valores verdadero y falso, los tamaños grande y pequeño y las opciones con o sin etiqueta. La etiqueta define una paleta semántica para estados (por defecto, información, éxito, peligro, aviso) y otra paleta aparte para visualización de datos (rojo, azul, verde, naranja, rosa, amarillo, turquesa, marrón), además de tamaños y posición del icono, para que ningún equipo tenga que adivinar ni volver a dar estilo desde cero.\n\nMosaic, la herramienta de diagnóstico creativo de Seedtag, también funciona con estos componentes: las tarjetas, pestañas y botones de su pantalla Attention & Visibility son el conjunto documentado aplicado, no un desarrollo aparte.",
+        "alts": {
+          "img-switch-doc": "Documentación del componente interruptor: estados, tamaños y comportamientos",
+          "img-tag-doc": "Documentación del componente etiqueta: paletas de estado y de visualización de datos, tamaños y variantes de contenido"
+        }
+      }
+    }
+  },
+  "project-ceci-makeup": {
+    "descriptionEs": "Logotipo y naming para una maquilladora que lanza su propio negocio, creados a partir de su propio nombre.",
+    "tagsEs": ["Branding", "Logotipo y naming"],
+    "sections": {
+      "context": {
+        "labelEs": "Contexto",
+        "bodyEs": "Cecilia es maquilladora y empezaba su propio negocio desde cero: sin marca previa ni reconocimiento del que partir, solo su oficio y una cartera de clientas a la que abrirse. Tenía una petición clara desde el principio: su propio nombre, en el logotipo."
+      },
+      "problem": {
+        "labelEs": "Problema",
+        "bodyEs": "El branding de maquillaje y belleza recurre casi por reflejo a un mismo lenguaje visual: logotipos en serifa cursiva, firmas manuscritas suaves, la misma caligrafía elegante que usa todo el mundo. Es especialmente habitual entre maquilladoras autónomas que construyen su marca personal: casi todas acaban con alguna variante de la misma serifa cursiva. Además, un nombre completo rara vez se convierte en un símbolo que funcione en pequeño, en una tarjeta de visita o en una cuadrícula de Instagram. CECI tenía que sentirse suya y, a la vez, diferenciarse de esa uniformidad.",
+        "alts": { "img-logo-exploration": "Exploración del logotipo de CECI: ocho direcciones probadas antes del sello circular final" }
+      },
+      "solution": {
+        "labelEs": "Solución",
+        "bodyEs": "El nombre ya estaba dentro del suyo: «Cecilia» acortado a «Ceci», como la llama cualquiera que la conoce. Eso dio a la identidad su punto de partida antes de dibujar un solo logotipo: un nombre que la gente ya usaba, no uno inventado para la marca.\n\nCECI: un logotipo en minúsculas dentro de un sello circular («Makeup Artist · Based in Madrid · 1996») que se lee como un sello y no como una marca corporativa. El propio nombre es la lógica: cuatro letras tomadas directamente de «Cecilia», que además son el apodo con el que ya la llaman.\n\nUna sans geométrica limpia en lugar de la serifa cursiva habitual en el sector: ese cambio por sí solo hace casi todo el trabajo de diferenciación, porque es el detalle que comparten casi todas las marcas de maquilladoras de la competencia. Las minúsculas, y no las mayúsculas, mantienen esa contención personal en lugar de corporativa. Llegar hasta ahí supuso enfrentar el logotipo consigo mismo: una dirección más oscura, en tonos joya, sobre una macrofotografía del ala de una mariposa, y después ocho direcciones más explícitas (letras de círculos enlazados, un sello ovalado con «MAKEUP» escrito, letras cortadas como un gráfico de tarta, un «ce/ci» apilado) hasta que ganó el sello circular con el texto completo rodeando el borde.",
+        "alts": { "img-exploration-1": "Primera exploración del logotipo de CECI: el logotipo sobre una macrofotografía del ala de una mariposa" }
+      }
+    }
+  },
+  "project-mosaic": {
+    "descriptionEs": "Una herramienta de diagnóstico creativo para la IA neurocontextual de Seedtag, que convierte datos densos de atención y emoción en recomendaciones previas a la campaña que un equipo creativo puede aplicar. (Los ejemplos de campaña que se muestran son ficticios, creados solo como demostración).",
+    "tagsEs": ["Web", "Diseño de producto"],
+    "timelineEs": "T4 2025",
+    "sections": {
+      "context": {
+        "labelEs": "Contexto",
+        "bodyEs": "Seedtag Mosaic es la suite creativa premium de Seedtag: une capacidades de diseño con la inteligencia contextual de Liz para ofrecer análisis creativo y piezas generadas con IA más allá de la producción estándar. Se compone de tres productos: Creative Compass lee las creatividades existentes de un cliente y las relaciona con los contextos y públicos con los que encajan de forma natural, sin modificarlas; Creative Intelligence las puntúa en seis dimensiones estructurales y recomienda qué corregir; Generative AI convierte esas recomendaciones en variantes nuevas adaptadas al contexto.\n\nDiseñé la interfaz de Creative Intelligence by Liz, el módulo que pone ese diagnóstico delante del cliente."
+      },
+      "problem": {
+        "labelEs": "Problema",
+        "bodyEs": "El diagnóstico en sí es denso: resonancia emocional, modelado de atención, ajuste al formato y alineación con el contexto, cada uno con su propia capa de puntuación. Entregado como datos en bruto, nada de eso cambia cómo un cliente edita su anuncio; solo añade otro informe que leer.\n\nEl encargo era convertir un análisis neurocontextual en algo que un equipo creativo pudiera abrir, entender y aplicar en minutos: no un panel de puntuaciones, sino una lista corta de pasos concretos, cada uno ligado a por qué importa."
+      },
+      "analysis": {
+        "labelEs": "Análisis",
+        "bodyEs": "El recorrido empieza por el diagnóstico: Creative Intelligence, impulsado por Liz y los modelos de respuesta cognitiva de Neurons, puntúa la creatividad en seis dimensiones (Creative Quality, Contextual Fit Score, Attention & Visibility Insights, Neuroscience Engagement, Format Comparison y Emotional Impact & Resonance), y cada una se desglosa en las señales concretas que explican la cifra, no solo en la cifra.\n\nNota: los ejemplos de campaña de este caso (FedEx, H&M) son ficticios, creados para mostrar el producto; no son entregas reales a clientes.",
+        "alts": {
+          "img-analysis-overview": "Resumen del análisis de Mosaic: tarjetas de Emotional Impact, Format Analysis, Audience Comparison y Before & After",
+          "img-before-after": "Gráfico de radar Before & After de Mosaic comparando calidad creativa, ajuste al contexto, atención y resonancia emocional"
+        }
+      },
+      "recommendations": {
+        "labelEs": "Recomendaciones",
+        "bodyEs": "A partir de ahí, cada corrección que recomienda Liz se ancla directamente sobre la creatividad que modifica (Branding, Composition & Layout, Motion & Editing), etiquetada en su sitio en lugar de listada en una hoja aparte, y después se agrupa en una vista de resultados con tarjetas breves y priorizadas que indican el cambio y el resultado que se espera mejorar.",
+        "alts": { "img-annotated-recs": "Recomendaciones de Mosaic ancladas directamente sobre la creatividad: etiquetas de Branding, Composition & Layout y Motion & Editing" }
+      },
+      "generative-output": {
+        "labelEs": "Resultado generativo",
+        "bodyEs": "Los cambios aprobados se generan como variantes listas, con previsualización por dispositivo y optimización creativa dinámica integrada, para que el mismo informe que diagnosticó el anuncio termine en algo que el equipo pueda publicar.\n\nUna diseñadora o un diseñador revisa y ajusta cada variante generada antes de entregarla (color, maquetación y calidad comparados con el original), y nada se publica sin la aprobación explícita del cliente.",
+        "alts": { "img-generated-output": "Variante creativa generada por Mosaic con previsualización por dispositivo y optimización creativa dinámica" }
+      }
+    }
+  },
+  "project-seedtag-emotion-quotient": {
+    "descriptionEs": "Un informe semanal en directo que clasifica los 5 momentos culturales que más ha sentido el mundo, creado sobre la tecnología propia de Seedtag para medir la emoción del contenido.",
+    "tagsEs": ["Web", "Basado en datos"],
+    "timelineEs": "Desde agosto de 2026, semanal",
+    "roleEs": "Diseño y front-end",
+    "teamEs": "En solitario, con revisión semanal del equipo de contenido de Seedtag",
+    "sections": {
+      "context": {
+        "labelEs": "Contexto",
+        "bodyEs": "Seedtag tiene tecnología propia para leer la señal emocional del contenido editorial, creada en origen para decidir dónde colocar los anuncios. Emotion Quotient lleva esa misma capacidad hacia fuera: un informe público y periódico en lugar de una herramienta interna."
+      },
+      "problem": {
+        "labelEs": "Problema",
+        "bodyEs": "Seedtag tenía una capacidad realmente diferencial sin ninguna cara pública. La prensa, los clientes potenciales y los socios no tenían forma de ver qué significaba en la práctica, y cualquier cosa hecha para mostrarlo tenía que ser fiable desde la primera cifra."
+      },
+      "strategy": {
+        "labelEs": "Estrategia",
+        "bodyEs": "Los primeros borradores solo repetían lo obvio. El informe empezó a merecer publicarse cuando tuvo reglas editoriales de verdad: ser cultural y no de actualidad, exigir que un momento aparezca en varios mercados y llamar a algo «inesperado» solo cuando los datos lo respaldan de verdad."
+      },
+      "design": {
+        "labelEs": "Diseño",
+        "bodyEs": "Una web semanal construida sobre una única fuente de datos, para que la portada, los momentos clasificados y cada tarjeta estén sincronizados en cada edición. Cada tarjeta enlaza a una fuente real (nada inventado) y nada se publica sin una revisión manual previa.\n\nCada emoción que puede aparecer en el informe necesitaba su propio color e icono coherentes, para que una tarjeta se lea bien de un vistazo en cualquier parte de la web.",
+        "alts": { "img-emotion-branding": "Sistema visual de las etiquetas de emoción: rueda de referencia, exploración de degradados de color e iconos y píldoras de color finales para cada emoción" }
+      },
+      "launch": {
+        "labelEs": "Lanzamiento",
+        "bodyEs": "Se lanzó a través de los canales propios de Seedtag, con un artículo en el blog que explica el mecanismo para quien quiera conocerlo a fondo. Cada informe semanal se publica también como un carrusel corto para redes, pensado para leerse como una historia en sí mismo.",
+        "alts": {
+          "img-carousel-1": "Portada del carrusel: Your Weekly Digest by Seedtag Emotion Quotient, semana del 31 de agosto al 4 de septiembre",
+          "img-carousel-2": "Diapositiva del carrusel: el US Open 2026, Alcaraz encantó al público mientras el cuerpo de Djokovic le fallaba",
+          "img-carousel-3": "Diapositiva del carrusel: Miley Cyrus, cambio de nombre y nuevo álbum despiertan curiosidad",
+          "img-carousel-4": "Diapositiva del carrusel: Festival de Venecia, los Leones de Oro generan entusiasmo por Clooney y Burstyn",
+          "img-carousel-5": "Diapositiva del carrusel: Caitlin Clark y Team USA, subidas sorpresa antes del Mundial FIBA",
+          "img-carousel-6": "Diapositiva del carrusel: Gloria Steinem, el mundo recuerda con admiración a un icono feminista"
+        }
+      },
+      "results": {
+        "labelEs": "Resultados",
+        "bodyEs": "En directo y con una edición cada semana desde agosto de 2026, con un archivo creciente para comparar semana a semana y una buena acogida desde el principio."
+      }
+    }
+  },
+  "project-isola": {
+    "descriptionEs": "Todas las piezas digitales de la apertura de una pop-up store, diseñadas como un único recorrido: desde el save the date hasta el catálogo en manos del invitado.",
+    "tagsEs": ["Concepto", "Campaña digital"],
+    "timelineEs": "2026, concepto propio",
+    "roleEs": "Dirección de arte, diseño y front-end",
+    "teamEs": "En solitario",
+    "sections": {
+      "context": {
+        "labelEs": "Contexto",
+        "bodyEs": "ISOLA es un concepto propio, no un encargo: una pop-up de verano para una marca mediterránea ficticia de cestas y piel, abierta cuatro días en Salesas, Madrid. Escribí el brief yo mismo para diseñar todos los puntos de contacto digitales que necesita un evento así, desde el primer teaser hasta el momento en que un invitado tiene una pieza en la mano.\n\nFotografía de Daniel Farò para Death to Stock.",
+        "alts": { "img-hub": "Resumen de la campaña ISOLA: noche de apertura, fechas de la tienda y las cinco piezas de la campaña" }
+      },
+      "problem": {
+        "labelEs": "Problema",
+        "bodyEs": "Las marcas pequeñas que lanzan una pop-up suelen acabar con piezas inconexas: una publicación en Instagram, una plantilla de email genérica, una herramienta de formularios y una lista de precios en PDF, cada una con su propio aspecto. Cada salto entre ellas es un punto en el que se pierde un invitado, y ninguna se siente como la propia tienda."
+      },
+      "solution": {
+        "labelEs": "Solución",
+        "bodyEs": "Un único sistema visual en cinco piezas, cada una ligada a un momento del recorrido del invitado. Una galería save the date que se desplaza con el ratón. Un email de invitación. Una página de confirmación que envía un pase personal con código QR y un email de confirmación con un archivo para añadir al calendario. Y un catálogo para móvil para ver la colección y reservar piezas en la tienda.\n\nFondos negros, una serifa clásica y la fotografía hablando por sí misma: el mismo tono desde el primer email hasta la caja.",
+        "stats": { "s1": "piezas digitales", "s2": "sistema visual", "s3": "días de tienda" },
+        "alts": {
+          "img-std": "Save the date: una galería oscura de la colección que se desplaza con el ratón, con la fecha de apertura en el centro",
+          "img-emails": "Email de invitación y email de confirmación con el pase personal del invitado y su código QR",
+          "img-mobile": "Página de confirmación y catálogo para móvil en pantallas de teléfono"
+        }
+      }
+    }
+  },
+  "6rEg5NJmU1VCqgtBIbxht6": {
+    "descriptionEs": "Identidad de marca para una exposición de arte.",
+    "tagsEs": ["Branding", "Identidad"]
+  }
+}

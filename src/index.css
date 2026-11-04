@@ -92,6 +92,10 @@
   -webkit-user-drag: none;
 }
 
+/* Home: magnetic sheets (see Index.tsx) */
+html.snap-sheets { scroll-snap-type: y proximity; }
+.snap-point { height: 0; scroll-snap-align: start; }
+
 /* Animations */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(30px); }

@@ -7,6 +7,7 @@ import { fetchProjectBySlug } from "@/lib/sanity/queries";
 import { urlForImage } from "@/lib/sanity/image";
 import type { SanityProject } from "@/lib/sanity/types";
 import NotFound from "./NotFound";
+import { localizeProject, useLang, useT } from "@/lib/i18n";
 
 const slugifyLabel = (label: string) =>
   label
@@ -17,7 +18,10 @@ const slugifyLabel = (label: string) =>
 
 const ProjectDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const [project, setProject] = useState<SanityProject | null | undefined>(undefined);
+  const [rawProject, setProject] = useState<SanityProject | null | undefined>(undefined);
+  const lang = useLang();
+  const t = useT();
+  const project = rawProject ? localizeProject(rawProject, lang) : rawProject;
   const [active, setActive] = useState<string>("");
 
   useEffect(() => {
@@ -184,7 +188,7 @@ const ProjectDetail = () => {
                     rel="noopener noreferrer"
                     className="mb-8 inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
                   >
-                    Visit live site
+                    {t("visitLive")}
                     <span aria-hidden="true">↗</span>
                   </a>
                 )}
@@ -219,9 +223,7 @@ const ProjectDetail = () => {
                   <Link
                     to="/"
                     className="text-[14px] font-normal text-foreground/60 tracking-[0.01em] transition-colors duration-300 hover:text-foreground"
-                  >
-                    Back
-                  </Link>
+                  >{t("back")}</Link>
                 </div>
               </nav>
             </aside>
@@ -235,7 +237,7 @@ const ProjectDetail = () => {
                   rel="noopener noreferrer"
                   className="lg:hidden inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
                 >
-                  Visit live site
+                  {t("visitLive")}
                   <span aria-hidden="true">↗</span>
                 </a>
               )}
@@ -337,7 +339,7 @@ const ProjectDetail = () => {
                               rel="noopener noreferrer"
                               className="mt-4 inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
                             >
-                              Visit live site
+                              {t("visitLive")}
                               <span aria-hidden="true">↗</span>
                             </a>
                           )}
@@ -354,6 +356,7 @@ const ProjectDetail = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 };

@@ -2,10 +2,10 @@ import { Fragment, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import ClosingHello from "@/components/ClosingHello";
+import Footer from "@/components/Footer";
 import ClothHero from "@/components/ClothHero";
 import HeroCard from "@/components/HeroCard";
 import ImageTrailHero from "@/components/ImageTrailHero";
-import IntroText from "@/components/IntroText";
 import Nav from "@/components/Nav";
 import ProjectsGallery from "@/components/ProjectsGallery";
 import StackSheet from "@/components/StackSheet";
@@ -40,20 +40,33 @@ const Index = () => {
   // ?hero=cloth or ?hero=trail picks one.
   const [hero, setHero] = useState<"cloth" | "trail">(pickHero);
 
+  // Magnetic sheets: stop scrolling near the start of a sheet and the page
+  // settles onto it (proximity snap, so the index can still be read freely).
+  useEffect(() => {
+    const html = document.documentElement;
+    html.classList.add("snap-sheets");
+    return () => html.classList.remove("snap-sheets");
+  }, []);
+
   // Arriving from another page via a nav link (/#work,
   // /#contact): scroll to that section once it's mounted, since a route change
   // alone doesn't auto-scroll to a hash the way a real anchor navigation
   // would.
   useEffect(() => {
-    const targetId = location.hash.replace("#", "");
+    const hash = location.hash.replace("#", "");
+    const targetId = hash === "start" ? "contact" : hash;
     if (targetId !== "work" && targetId !== "contact") return;
-    const id = requestAnimationFrame(() => {
+    // Wait for the projects to load (they set the page's length), then go.
+    let tries = 0;
+    const id = window.setInterval(() => {
       const el = document.getElementById(targetId);
-      if (!el) return;
-      const y = el.getBoundingClientRect().top + window.scrollY - 20;
+      const ready = document.querySelectorAll("#work li").length > 0;
+      if (!el || (!ready && ++tries < 30)) return;
+      window.clearInterval(id);
+      const y = el.getBoundingClientRect().top + window.scrollY - (targetId === "work" ? 20 : 0);
       window.scrollTo({ top: y, behavior: "smooth" });
-    });
-    return () => cancelAnimationFrame(id);
+    }, 100);
+    return () => window.clearInterval(id);
   }, [location]);
 
   return (
@@ -75,11 +88,14 @@ const Index = () => {
         <meta property="og:image" content="https://www.josepelaez.es/og-image.png" />
       </Helmet>
       <Nav />
+      {/* The menu card: fixed, above every sheet */}
+      <HeroCard />
 
       {/* Three parts stacked like sheets: the hero stays put and the intro and
           projects slide up over it; once the projects end they stay put in turn
           and “Time to say hello” and the footer slide up over them. */}
       <div className="relative">
+      <div aria-hidden="true" className="snap-point" />
       <section className="sticky top-0 z-0 w-full h-[100dvh] overflow-hidden bg-[#F5F5F5] flex items-center justify-center touch-pan-y">
         <div className="relative z-0 w-full pointer-events-none px-6 flex items-center justify-center">
           {heroTitle !== null && (
@@ -108,16 +124,18 @@ const Index = () => {
         </div>
 
         {hero === "cloth" ? <ClothHero onUnsupported={() => setHero("trail")} /> : <ImageTrailHero />}
-        <HeroCard />
       </section>
 
+      {/* Snap points sit in the normal flow (the sheets themselves are sticky) */}
+      <div aria-hidden="true" className="snap-point" />
       <StackSheet className="z-10">
-        <IntroText />
         <ProjectsGallery />
       </StackSheet>
+      <div aria-hidden="true" className="snap-point" />
       <div className="relative z-20 bg-background">
         {/* The close: how to get in touch, and me waving in dots */}
         <ClosingHello />
+        <Footer />
       </div>
       </div>
     </>
@@ -129,10 +147,10 @@ function pickHero(): "cloth" | "trail" {
   const q = new URLSearchParams(window.location.search).get("hero");
   let pick: "cloth" | "trail" | null = q === "cloth" || q === "trail" ? q : null;
   try {
-    if (!pick) {
-      const saved = sessionStorage.getItem(HERO_KEY);
-      pick = saved === "cloth" || saved === "trail" ? saved : null;
-    }
+    const saved = sessionStorage.getItem(HERO_KEY);
+    // Dev server: each reload swaps to the other one, to compare them
+    if (!pick && import.meta.env.DEV && (saved === "cloth" || saved === "trail")) pick = saved === "cloth" ? "trail" : "cloth";
+    if (!pick) pick = saved === "cloth" || saved === "trail" ? saved : null;
     pick ??= Math.random() < 0.5 ? "cloth" : "trail";
     sessionStorage.setItem(HERO_KEY, pick);
   } catch {
