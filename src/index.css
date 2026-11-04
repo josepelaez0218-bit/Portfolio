@@ -142,6 +142,16 @@
   .custom-cursor, .custom-cursor-ring { display: none; }
 }
 
+/* Hero “Scroll” hint: a dot running down its line */
+@keyframes scroll-cue {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(400%); }
+}
+.scroll-cue-dot { animation: scroll-cue 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue-dot { animation: none; transform: translateY(150%); }
+}
+
 /* Scroll reveal */
 .reveal {
   opacity: 0;
@@ -155,13 +165,22 @@
   transform: translateY(0);
 }
 
+/* Project cards: a longer rise, staggered from the grid (ProjectsGallery) */
+.reveal-card {
+  transform: translateY(72px);
+  transition-duration: 1.2s;
+}
+.reveal-card.is-visible {
+  transform: translateY(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up, .animate-slide-down {
     animation: none;
     opacity: 1;
     transform: none;
   }
-  .reveal {
+  .reveal, .reveal-card {
     opacity: 1;
     transform: none;
     transition: none;

@@ -4,6 +4,9 @@ import { fetchProjects } from "@/lib/sanity/queries";
 import { urlForImage } from "@/lib/sanity/image";
 import type { SanityProject } from "@/lib/sanity/types";
 
+// Gap between cards rising together on screen.
+const STAGGER_MS = 160;
+
 const ProjectsGallery = () => {
   const [projects, setProjects] = useState<SanityProject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,12 +66,17 @@ const ProjectsGallery = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            observer.unobserve(entry.target);
-          }
-        });
+        // Cards that come into view together rise one after another, in
+        // grid order (left before right, top before bottom).
+        entries
+          .filter((entry) => entry.isIntersecting)
+          .map((entry) => entry.target as HTMLElement)
+          .sort((a, b) => cardRefs.current.indexOf(a as HTMLAnchorElement) - cardRefs.current.indexOf(b as HTMLAnchorElement))
+          .forEach((el, k) => {
+            el.style.transitionDelay = `${k * STAGGER_MS}ms`;
+            el.classList.add("is-visible");
+            observer.unobserve(el);
+          });
       },
       { threshold: 0, rootMargin: "0px 0px -15% 0px" },
     );
@@ -93,8 +101,7 @@ const ProjectsGallery = () => {
                 key={project._id}
                 to={`/work/${project.slug}`}
                 ref={(el) => (cardRefs.current[i] = el)}
-                className="group block reveal"
-                style={{ transitionDelay: `${(i % 2) * 100}ms` }}
+                className="group block reveal reveal-card"
               >
                 {/* Vertical 4:5 covers on phones (more presence), 3:2 from md up. */}
                 <div className="relative aspect-[4/5] md:aspect-[3/2] overflow-hidden rounded-[4px] bg-secondary">
