@@ -6,7 +6,6 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
   const [showContact, setShowContact] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const onLab = pathname === "/lab";
   const onHome = pathname === "/";
 
   // Hide on the way down, come back on the way up (always shown near the top).
@@ -42,8 +41,8 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
       const work = document.getElementById("work");
       if (!work) return setGlass(false);
       const r = work.getBoundingClientRect();
-      // The tile spans y 12–60px.
-      setGlass(r.top < 60 && r.bottom > 12);
+      // The tile spans y 20–68px (24–72 from md up).
+      setGlass(r.top < 72 && r.bottom > 20);
     };
     const onScroll = () => {
       if (raf === null) raf = requestAnimationFrame(check);
@@ -79,14 +78,12 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
 
   const handleProjectsClick: MouseEventHandler<HTMLAnchorElement> = (e) =>
     scrollToId("work", e);
-  const handleLabClick: MouseEventHandler<HTMLAnchorElement> = (e) =>
-    scrollToId("lab", e);
 
   return (
     <>
       {/* Logo mark: its own fixed layer (outside the nav's difference blend,
           which would invert it) — a 48×48 white tile, 4px radius, with the
-          smiling "J." mark (logo-letter.svg), on the site's 12px edge. Over the projects grid it
+          smiling "J." mark (logo-letter.svg), on the site's 20px / 40px edge. Over the projects grid it
           turns to frosted glass (same shape) so the covers show through. */}
       <Link
         to="/"
@@ -97,7 +94,7 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
           transition:
             "translate 500ms cubic-bezier(0.22,1,0.36,1), background-color 500ms, backdrop-filter 500ms, transform 300ms",
         }}
-        className={`fixed top-3 left-3 z-[201] flex h-12 w-12 items-center justify-center rounded-[4px] animate-slide-down transition-[background-color,backdrop-filter,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${hidden ? "" : "hover:scale-[1.04]"} ${
+        className={`fixed top-5 left-5 md:top-6 md:left-10 z-[201] flex h-12 w-12 items-center justify-center rounded-[4px] animate-slide-down transition-[background-color,backdrop-filter,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${hidden ? "" : "hover:scale-[1.04]"} ${
           glass
             ? "bg-white/45 backdrop-blur-xl backdrop-saturate-150"
             : "bg-white"
@@ -119,7 +116,7 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
         they stay legible over light and dark sections. Vertically centred on
         the logo tile (12px + 48px / 2 = 36px). */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-[200] px-3 pt-[24px] animate-slide-down mix-blend-difference text-white `}
+        className={`fixed top-0 left-0 right-0 z-[200] px-5 md:px-10 pt-[32px] md:pt-[36px] animate-slide-down mix-blend-difference text-white `}
         style={{
           translate: hidden ? "0 -100%" : "0 0",
           transition: "translate 500ms cubic-bezier(0.22,1,0.36,1)",
@@ -128,7 +125,7 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
         <div className="max-w-[1900px] mx-auto flex items-center justify-between">
           <div className="pl-[60px] min-h-[20px] flex items-center">
             {subtitle && (
-              <span className="text-[13px] font-light leading-[1.3] text-white/60 tracking-[0.01em]">
+              <span className="text-[14px] font-normal leading-[1.3] text-white/60 tracking-[0.01em]">
                 {subtitle}
               </span>
             )}
@@ -137,23 +134,14 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
             <Link
               to="/#work"
               onClick={handleProjectsClick}
-              className="text-[13px] font-light text-white/70 tracking-[0.01em] transition-colors duration-300 hover:text-white"
+              className="text-[14px] font-normal text-white/70 tracking-[0.01em] transition-colors duration-300 hover:text-white"
             >
               Work
-            </Link>
-            <Link
-              to="/#lab"
-              onClick={handleLabClick}
-              className={`text-[13px] tracking-[0.01em] transition-colors duration-300 hover:text-white ${
-                onLab ? "font-medium text-white" : "font-light text-white/70"
-              }`}
-            >
-              Lab
             </Link>
             <div className="relative">
               <button
                 onClick={() => setShowContact(!showContact)}
-                className="text-[13px] font-light text-white/70 tracking-[0.01em] transition-colors duration-300 hover:text-white"
+                className="text-[14px] font-normal text-white/70 tracking-[0.01em] transition-colors duration-300 hover:text-white"
               >
                 Contact
               </button>
@@ -164,7 +152,7 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
                 >
                   <a
                     href="mailto:josepelaez0218@gmail.com"
-                    className="text-[12px] font-light text-white/60 tracking-[0.01em] transition-colors duration-300 hover:text-white whitespace-nowrap"
+                    className="text-[12px] font-normal text-white/60 tracking-[0.01em] transition-colors duration-300 hover:text-white whitespace-nowrap"
                   >
                     josepelaez0218@gmail.com
                   </a>

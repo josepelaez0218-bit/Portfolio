@@ -1,5 +1,4 @@
 import { Helmet } from "react-helmet-async";
-import CustomCursor from "@/components/CustomCursor";
 import Footer from "@/components/Footer";
 import LabEditorial from "@/components/lab-essay/LabEditorial";
 import Nav from "@/components/Nav";
@@ -23,7 +22,6 @@ const Lab = () => {
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://www.josepelaez.es/og-image.png" />
       </Helmet>
-      <CustomCursor />
       <Nav />
       <LabEditorial mode="page" />
       <Footer />

@@ -12,15 +12,12 @@ const Footer = () => {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative z-10 w-full bg-background text-foreground px-3 pt-20 pb-8 md:pt-28 md:pb-10 border-t border-border/60">
+    <footer className="relative z-10 w-full bg-background text-foreground px-5 md:px-10 pt-20 pb-8 md:pt-32 md:pb-10 border-t border-border/60">
       <div className="max-w-[1900px] mx-auto flex flex-col gap-16 md:gap-24">
         <div className="grid gap-10 md:grid-cols-12 md:gap-6 md:items-end">
           <div className="md:col-span-7 flex flex-col gap-5">
-            <p className="text-[13px] font-medium tracking-[0.01em] text-foreground/70">Jose Peláez</p>
-            <p
-              className="font-serif text-foreground/85 max-w-[34ch] text-balance"
-              style={{ fontSize: "clamp(1.3rem, 1.6vw + 0.9rem, 2rem)", lineHeight: 1.3 }}
-            >
+            <p className="text-[14px] font-medium tracking-[0.01em] text-foreground/70">Jose Peláez</p>
+            <p className="text-lead text-foreground max-w-[34ch] text-balance">
               I’m Jose, a product and brand designer based in Madrid. I design brands, websites and digital products, and
               build the front end that ships them — this site included.
             </p>
@@ -45,7 +42,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-6 text-[13px] tracking-[0.01em]">
+        <div className="flex items-center justify-between gap-6 text-[14px] tracking-[0.01em]">
           <p className="text-foreground/60">© {year} Jose Peláez · Madrid</p>
           <nav className="flex items-center gap-2">
             <Link
@@ -53,9 +50,6 @@ const Footer = () => {
               className="px-2 py-3 text-foreground/70 transition-colors duration-300 hover:text-foreground"
             >
               Work
-            </Link>
-            <Link to="/lab" className="px-2 py-3 text-foreground/70 transition-colors duration-300 hover:text-foreground">
-              Lab
             </Link>
           </nav>
         </div>

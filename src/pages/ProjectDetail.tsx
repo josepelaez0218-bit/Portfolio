@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import CustomCursor from "@/components/CustomCursor";
 import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
 import { fetchProjectBySlug } from "@/lib/sanity/queries";
@@ -116,7 +115,6 @@ const ProjectDetail = () => {
         <meta name="twitter:image" content={ogImageUrl} />
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
       </Helmet>
-      <CustomCursor />
 
       <Nav subtitle={project.title} />
 
@@ -146,8 +144,8 @@ const ProjectDetail = () => {
         </div>
       ) : (
         /* Hero, framed gray section */
-        <section className="w-full bg-[hsl(0_0%_92%)] px-6 pt-28 pb-20 md:pt-32 md:pb-28">
-          <div className="max-w-[1400px] mx-auto">
+        <section className="w-full bg-[hsl(0_0%_92%)] px-5 md:px-10 pt-28 pb-20 md:pt-32 md:pb-32">
+          <div className="max-w-[1900px] mx-auto">
             <div className="w-full overflow-hidden reveal" data-reveal>
               {project.heroVideoUrl ? (
                 <video
@@ -173,8 +171,8 @@ const ProjectDetail = () => {
       )}
 
       {/* Content */}
-      <main className="bg-background px-6 pt-16 md:pt-24 pb-32">
-        <div className="max-w-[1400px] mx-auto">
+      <main className="bg-background px-5 md:px-10 pt-20 md:pt-32 pb-20 md:pb-32">
+        <div className="max-w-[1900px] mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-[180px_1fr] gap-12 lg:gap-24">
             {/* Sidebar */}
             <aside className="hidden lg:block">
@@ -184,7 +182,7 @@ const ProjectDetail = () => {
                     href={project.liveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mb-8 inline-flex items-center gap-1.5 rounded-full bg-foreground text-background px-4 py-2 text-[13px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
+                    className="mb-8 inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
                   >
                     Visit live site
                     <span aria-hidden="true">↗</span>
@@ -208,7 +206,7 @@ const ProjectDetail = () => {
                           className={`text-[14px] tracking-[0.01em] transition-all duration-300 ${
                             active === id
                               ? "text-foreground font-bold"
-                              : "text-foreground/40 hover:text-foreground/80 font-light"
+                              : "text-foreground/60 hover:text-foreground font-normal"
                           }`}
                         >
                           {s.label}
@@ -220,7 +218,7 @@ const ProjectDetail = () => {
                 <div className="mt-10 pt-6 border-t border-border/60 w-10">
                   <Link
                     to="/"
-                    className="text-[14px] font-light text-foreground/60 tracking-[0.01em] transition-colors duration-300 hover:text-foreground"
+                    className="text-[14px] font-normal text-foreground/60 tracking-[0.01em] transition-colors duration-300 hover:text-foreground"
                   >
                     Back
                   </Link>
@@ -235,7 +233,7 @@ const ProjectDetail = () => {
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="lg:hidden inline-flex items-center gap-1.5 rounded-full bg-foreground text-background px-4 py-2 text-[13px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
+                  className="lg:hidden inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
                 >
                   Visit live site
                   <span aria-hidden="true">↗</span>
@@ -245,7 +243,7 @@ const ProjectDetail = () => {
                 const id = slugifyLabel(s.label);
                 return (
                   <section key={id} id={id} className="scroll-mt-10 reveal" data-reveal>
-                    <div className="font-mono text-[12px] text-foreground/50 mb-6 tracking-[0.02em]">
+                    <div className="text-[14px] text-foreground/60 mb-6 tracking-[0.01em]">
                       {project.timeline}
                     </div>
                     <h2
@@ -264,7 +262,7 @@ const ProjectDetail = () => {
                             <span className="font-sans font-semibold text-foreground leading-[1.1] tracking-[-0.01em] text-[28px] md:text-[34px]">
                               {stat.value}
                             </span>
-                            <span className="text-[12px] font-light text-foreground/55 tracking-[0.01em]">
+                            <span className="text-[12px] font-normal text-foreground/60 tracking-[0.01em]">
                               {stat.label}
                             </span>
                           </div>
@@ -275,7 +273,7 @@ const ProjectDetail = () => {
                       {s.body.split(/\n{2,}/).map((paragraph, pIndex) => (
                         <p
                           key={pIndex}
-                          className="text-[16px] font-normal text-foreground/75 leading-[1.6]"
+                          className="text-[16px] font-normal text-foreground/70 leading-[1.6]"
                         >
                           {paragraph}
                         </p>
@@ -328,7 +326,7 @@ const ProjectDetail = () => {
                             className="w-full h-auto"
                           />
                           {s.videoCaption && (
-                            <p className="mt-2 text-[12px] font-light text-foreground/50 tracking-[0.01em]">
+                            <p className="mt-2 text-[12px] font-normal text-foreground/60 tracking-[0.01em]">
                               {s.videoCaption}
                             </p>
                           )}
@@ -337,7 +335,7 @@ const ProjectDetail = () => {
                               href={project.liveUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-foreground text-background px-4 py-2 text-[13px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
+                              className="mt-4 inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
                             >
                               Visit live site
                               <span aria-hidden="true">↗</span>

@@ -12,6 +12,15 @@ const DOTS_VH = 105; //                         the line turns to dots, the dots
 const END_VH = DOTS_VH + DOTS.length; //         the figure holds, then the scene lets go
 const HEIGHT_VH = END_VH + 10; //                pinned stage (100vh) + its hold
 
+// "integrated" (test A): same grey ground as the hero, edge to edge, blue
+// dots like the cloth's square, a shorter scene, and it ends as the way into
+// the Lab instead of repeating who I am.
+const INTEGRATED = { speed: 1.8, ground: "#f5f5f5", bg: "0 0% 96%", fg: "0 0% 8%", ink: "#2b4cff" };
+const OUTRO_LINES = {
+  current: { mobile: ["I’m Jose,", "the UX/UI", "designer", "behind these", "projects"], desktop: ["I’m Jose, the", "UX/UI designer", "behind these", "projects"] },
+  integrated: { mobile: ["Come", "play in", "the Lab"], desktop: ["Come play", "in the Lab"] },
+};
+
 // Colour pairs (?pal=0…4 to compare; the switcher shows in local dev only)
 const PALETTES = [
   { name: "Negro · blanco", bg: "0 0% 0%", fg: "0 0% 100%", ground: "#000", ink: "#ffffff" },
@@ -32,10 +41,14 @@ const readPal = () => {
  * on a loop, then regroup into "I'm Jose, the UX/UI designer behind these projects". On the home page it closes with
  * a way into the Lab; on /lab the pieces follow in a grid.
  */
-const LabEditorial = ({ mode = "home" }: { mode?: "home" | "page" }) => {
+const LabEditorial = ({ mode = "home", variant = "current" }: { mode?: "home" | "page"; variant?: "current" | "integrated" }) => {
   const sectionRef = useRef<HTMLElement>(null);
   const [pal] = useState(readPal);
-  const PAL = PALETTES[pal];
+  const integrated = variant === "integrated";
+  const PAL = integrated ? { ...PALETTES[3], ...INTEGRATED } : PALETTES[pal];
+  const speed = integrated ? INTEGRATED.speed : 1;
+  const heightVh = DOTS_VH + DOTS.length / speed + 10;
+  const outro = OUTRO_LINES[variant];
   const dots = useRef<DotsHelloHandle>(null);
 
   // Camera: the visitor in dots. Asked for only on click; stopped when the
@@ -90,7 +103,12 @@ const LabEditorial = ({ mode = "home" }: { mode?: "home" | "page" }) => {
 
   return (
     <div id="lab" className="bg-background text-foreground" style={{ ["--background" as any]: PAL.bg, ["--foreground" as any]: PAL.fg }}>
-      <section ref={sectionRef} className="relative" style={{ height: `${HEIGHT_VH}vh` }} aria-label="Time to say hello — I’m Jose, the UX/UI designer behind these projects">
+      <section
+        ref={sectionRef}
+        className="relative"
+        style={{ height: `${integrated ? heightVh : HEIGHT_VH}vh` }}
+        aria-label={integrated ? "Time to say hello — come play in the Lab" : "Time to say hello — I’m Jose, the UX/UI designer behind these projects"}
+      >
         <div className="sticky top-0 h-screen overflow-hidden flex items-center justify-center px-5">
           {/* First child on purpose: DotsHello dots this heading, and fades it
               along with whatever sits just before it (nothing). */}
@@ -112,31 +130,40 @@ const LabEditorial = ({ mode = "home" }: { mode?: "home" | "page" }) => {
             aria-hidden="true"
             className="absolute inset-x-5 top-1/2 -translate-y-1/2 text-center font-sans font-black uppercase text-[12.5vw] leading-[0.95] md:text-[min(8.8vw,150px)] md:leading-[0.92] tracking-[-0.01em] opacity-0 pointer-events-none select-none"
           >
-            {["I’m Jose, the", "UX/UI designer", "behind these", "projects"].map((line) => (
-              <span key={line} className="block">
-                {line.split(" ").map((word, i) => (
-                  <span key={word}>
-                    {i > 0 ? " " : ""}
-                    <span>{word}</span>
+            {[
+              { lines: outro.mobile, show: "block md:hidden" },
+              { lines: outro.desktop, show: "hidden md:block" },
+            ].map(({ lines, show }) => (
+              <span key={show} className={show}>
+                {lines.map((line) => (
+                  <span key={line} className="block">
+                    {line.split(" ").map((word, i) => (
+                      <span key={word}>
+                        {i > 0 ? " " : ""}
+                        <span>{word}</span>
+                      </span>
+                    ))}
                   </span>
                 ))}
               </span>
             ))}
           </p>
-          <DotsHello live={camera} ref={dots} startVh={DOTS_VH} startDotted invert={"invert" in PAL && PAL.invert} ink={PAL.ink} ground={PAL.ground} />
+          <DotsHello live={camera} ref={dots} startVh={DOTS_VH} startDotted invert={"invert" in PAL && PAL.invert} ink={PAL.ink} ground={PAL.ground} speed={speed} />
           {/* Always on screen while the section is */}
           <div className="absolute left-1/2 -translate-x-1/2 bottom-[8vh] z-10 flex items-center gap-2 whitespace-nowrap">
             {/* Frosted glass, so it reads over dots, dark grounds and light ones alike */}
             <button
               onClick={camera ? stopCamera : startCamera}
-              className="relative inline-flex items-center gap-2 rounded-full bg-white/55 text-neutral-900 backdrop-blur-xl backdrop-saturate-150 border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] pl-4 pr-5 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-colors duration-300 hover:bg-white/70"
+              aria-label={camera ? "Stop camera" : "See yourself in dots"}
+              className="relative inline-flex items-center gap-2 rounded-full bg-white/55 text-neutral-900 backdrop-blur-xl backdrop-saturate-150 border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] px-3.5 md:pl-4 md:pr-5 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-colors duration-300 hover:bg-white/70"
             >
               {/* Material Symbols "photo_camera" (Google, Apache 2.0) */}
               <svg aria-hidden="true" viewBox="0 0 24 24" className="w-[18px] h-[18px] fill-current">
                 <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" />
               </svg>
               {camera && <span aria-hidden="true" className="absolute left-[30px] top-[13px] w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
-              {camera ? "Stop camera" : cameraError ? "Camera not available" : "See yourself in dots"}
+              {/* Phones: the icon alone, so both buttons fit */}
+              <span className="hidden md:inline">{camera ? "Stop camera" : cameraError ? "Camera not available" : "See yourself in dots"}</span>
             </button>
             {mode === "home" && (
               <Link

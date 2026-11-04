@@ -59,7 +59,7 @@ const IntroText = () => {
   }, [active]);
 
   return (
-    <section id="intro" className="relative z-10 w-full bg-background px-6 pt-[136px] pb-[168px] md:pt-[200px] md:pb-[232px]">
+    <section id="intro" className="relative z-10 w-full bg-background px-5 md:px-10 py-32 md:py-48">
       <div className="max-w-[560px] mx-auto flex flex-col items-center text-center">
         <div className="flex items-center gap-3 mb-6">
           {ITEMS.map((item, i) => (
@@ -70,7 +70,7 @@ const IntroText = () => {
               aria-pressed={active === i}
               aria-label={`Show text ${i + 1}`}
               className={`w-5 h-5 transition-colors duration-300 ${
-                active === i ? "text-foreground" : "text-foreground/20 hover:text-foreground/40"
+                active === i ? "text-foreground" : "text-foreground/20 hover:text-foreground/60"
               }`}
             >
               {item.icon}
@@ -78,16 +78,12 @@ const IntroText = () => {
           ))}
         </div>
         <div
-          className="flex items-center justify-center"
-          style={{
-            fontSize: "clamp(1.15rem, 1.5vw + 0.9rem, 1.75rem)",
-            lineHeight: 1.4,
-            minHeight: "calc(1.4em * 3)",
-          }}
+          className="text-lead flex items-center justify-center"
+          style={{ minHeight: "calc(1.3em * 3)" }}
         >
           <p
             key={active}
-            className="font-serif font-light text-foreground/80 animate-fade-up"
+            className="text-foreground animate-fade-up"
             style={{ animationDuration: "0.4s" }}
           >
             {ITEMS[active].text}

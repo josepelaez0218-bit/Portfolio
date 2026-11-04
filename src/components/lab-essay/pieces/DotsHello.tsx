@@ -47,8 +47,12 @@ type Props = {
   invert?: boolean;
   /** A live camera feed: when set, the visitor is drawn in dots instead of me */
   live?: HTMLVideoElement | null;
+  /** Plays the choreography this many times faster (a shorter scene) */
+  speed?: number;
+  /** Frames per second of the wave loop (the clip runs at 24) */
+  waveFps?: number;
 };
-const DotsHello = forwardRef<DotsHelloHandle, Props>(({ startVh, caption, ink = "#fff", ground = "#000", startDotted = false, invert = false, live = null }, ref) => {
+const DotsHello = forwardRef<DotsHelloHandle, Props>(({ startVh, caption, ink = "#fff", ground = "#000", startDotted = false, invert = false, live = null, speed = 1, waveFps = 24 }, ref) => {
   const liveRef = useRef<HTMLVideoElement | null>(null);
   liveRef.current = live;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -147,6 +151,8 @@ const DotsHello = forwardRef<DotsHelloHandle, Props>(({ startVh, caption, ink = 
       heading?.querySelectorAll<HTMLElement>("span").forEach((s) => {
         if (s.children.length || !s.textContent?.trim()) return;
         const r = s.getBoundingClientRect(), cs = getComputedStyle(s);
+        // Skip words in a hidden layout (the phone or desktop line breaks not in use)
+        if (!r.width || !r.height) return;
         g.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
         // Draw what's on screen: the heading is uppercased in CSS
         const ch = cs.textTransform === "uppercase" ? s.textContent.toUpperCase() : s.textContent;
@@ -258,7 +264,7 @@ const DotsHello = forwardRef<DotsHelloHandle, Props>(({ startVh, caption, ink = 
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
-      const sVh = S.sVh - startVh;
+      const sVh = (S.sVh - startVh) * speed;
       const heading = stage.querySelector("h1") as HTMLElement | null;
       const eyebrow = heading?.previousElementSibling as HTMLElement | null;
       const reduced = prefersReducedMotion();
@@ -310,7 +316,7 @@ const DotsHello = forwardRef<DotsHelloHandle, Props>(({ startVh, caption, ink = 
       // then back and forth over the waving part, so it never stops
       if (tFig > 0.35 && S.waveStart < 0) S.waveStart = performance.now();
       if (tFig <= 0) S.waveStart = -1;
-      const f = S.waveStart < 0 ? 0 : ((performance.now() - S.waveStart) / 1000) * 24;
+      const f = S.waveStart < 0 ? 0 : ((performance.now() - S.waveStart) / 1000) * waveFps;
       const LOOP_A = 18, LOOP_B = FRAMES - 1, span = LOOP_B - LOOP_A;
       const g = (f - LOOP_B) % (2 * span); // after the first pass: down to LOOP_A and back up
       const loopFrame = f <= LOOP_B ? f : g < span ? LOOP_B - g : LOOP_A + (g - span);
@@ -422,7 +428,7 @@ const DotsHello = forwardRef<DotsHelloHandle, Props>(({ startVh, caption, ink = 
       heading?.style.removeProperty("opacity");
       (heading?.previousElementSibling as HTMLElement | null)?.style.removeProperty("opacity");
     };
-  }, [startVh, ink, startDotted, invert]);
+  }, [startVh, ink, startDotted, invert, speed, waveFps]);
 
   useImperativeHandle(ref, () => ({
     update: (scrolled, vh) => {
