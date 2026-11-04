@@ -8,6 +8,7 @@ import IntroText from "@/components/IntroText";
 import LabEditorial from "@/components/lab-essay/LabEditorial";
 import Nav from "@/components/Nav";
 import ProjectsGallery from "@/components/ProjectsGallery";
+import StackSheet from "@/components/StackSheet";
 import { fetchHome } from "@/lib/sanity/queries";
 
 // Shown if Sanity has no Home document yet or the request fails.
@@ -75,7 +76,11 @@ const Index = ({ lab }: { lab?: ReactNode } = {}) => {
       <CustomCursor />
       <Nav />
 
-      <section className="relative w-full h-[100dvh] overflow-hidden bg-[#F5F5F5] flex items-center justify-center touch-pan-y">
+      {/* Three parts stacked like sheets: the hero stays put and the intro and
+          projects slide up over it; once the projects end they stay put in turn
+          and “Time to say hello” and the footer slide up over them. */}
+      <div className="relative">
+      <section className="sticky top-0 z-0 w-full h-[100dvh] overflow-hidden bg-[#F5F5F5] flex items-center justify-center touch-pan-y">
         <div className="relative z-0 w-full pointer-events-none px-6 flex items-center justify-center">
           {heroTitle !== null && (
             <h1
@@ -101,10 +106,15 @@ const Index = ({ lab }: { lab?: ReactNode } = {}) => {
         <ImageTrailHero />
       </section>
 
-      <IntroText />
-      <ProjectsGallery />
-      {lab ?? <LabEditorial />}
-      <Footer />
+      <StackSheet className="z-10">
+        <IntroText />
+        <ProjectsGallery />
+      </StackSheet>
+      <div className="relative z-20 bg-background">
+        {lab ?? <LabEditorial />}
+        <Footer />
+      </div>
+      </div>
     </>
   );
 };

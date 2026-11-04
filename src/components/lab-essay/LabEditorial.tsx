@@ -34,14 +34,8 @@ const readPal = () => {
  */
 const LabEditorial = ({ mode = "home" }: { mode?: "home" | "page" }) => {
   const sectionRef = useRef<HTMLElement>(null);
-  const [pal, setPal] = useState(readPal);
+  const [pal] = useState(readPal);
   const PAL = PALETTES[pal];
-  const pickPal = (n: number) => {
-    setPal(n);
-    const url = new URL(window.location.href);
-    url.searchParams.set("pal", String(n));
-    window.history.replaceState(null, "", url);
-  };
   const dots = useRef<DotsHelloHandle>(null);
 
   // Camera: the visitor in dots. Asked for only on click; stopped when the
@@ -158,24 +152,6 @@ const LabEditorial = ({ mode = "home" }: { mode?: "home" | "page" }) => {
         </div>
       </section>
       {mode === "page" && <LabGrid />}
-      {/* Local-only colour switcher */}
-      {import.meta.env.DEV && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[300] flex gap-1 max-w-[calc(100vw-24px)] overflow-x-auto whitespace-nowrap rounded-full bg-neutral-800/80 backdrop-blur-xl p-1 text-[12px] text-white">
-          {PALETTES.map((p, i) => (
-            <button
-              key={p.name}
-              onClick={() => pickPal(i)}
-              className={`flex items-center gap-2 rounded-full px-3 py-1.5 transition-colors ${i === pal ? "bg-white text-black" : "hover:bg-white/15"}`}
-            >
-              <span className="inline-flex">
-                <span className="w-3 h-3 rounded-full border border-white/30" style={{ background: `hsl(${p.bg})` }} />
-                <span className="-ml-1 w-3 h-3 rounded-full border border-white/30" style={{ background: p.ink }} />
-              </span>
-              {p.name}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
