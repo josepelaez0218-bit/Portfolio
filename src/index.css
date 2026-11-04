@@ -142,16 +142,6 @@
   .custom-cursor, .custom-cursor-ring { display: none; }
 }
 
-/* Hero “Scroll” hint: a dot running down its line */
-@keyframes scroll-cue {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(400%); }
-}
-.scroll-cue-dot { animation: scroll-cue 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
-@media (prefers-reduced-motion: reduce) {
-  .scroll-cue-dot { animation: none; transform: translateY(150%); }
-}
-
 /* Scroll reveal */
 .reveal {
   opacity: 0;

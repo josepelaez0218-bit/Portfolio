@@ -8,7 +8,6 @@ import IntroText from "@/components/IntroText";
 import LabEditorial from "@/components/lab-essay/LabEditorial";
 import Nav from "@/components/Nav";
 import ProjectsGallery from "@/components/ProjectsGallery";
-import ScrollCue from "@/components/ScrollCue";
 import { fetchHome } from "@/lib/sanity/queries";
 
 // Shown if Sanity has no Home document yet or the request fails.
@@ -100,7 +99,6 @@ const Index = ({ lab }: { lab?: ReactNode } = {}) => {
         </div>
 
         <ImageTrailHero />
-        <ScrollCue targetId="intro" />
       </section>
 
       <IntroText />
