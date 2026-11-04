@@ -60,16 +60,17 @@ const Index = ({ lab }: { lab?: ReactNode } = {}) => {
         <title>Jose Peláez — Product & Brand Design</title>
         <meta
           name="description"
-          content="Jose Peláez — product and brand designer (Buen Puerto) building websites and brands for growing businesses."
+          content="Jose Peláez — product and brand designer based in Madrid. Brand identities, websites and digital products, designed and built end to end."
         />
-        <link rel="canonical" href="https://josepelaez.es/" />
+        <link rel="canonical" href="https://www.josepelaez.es/" />
         <meta property="og:title" content="Jose Peláez — Product & Brand Design" />
         <meta
           property="og:description"
-          content="Jose Peláez — product and brand designer (Buen Puerto) building websites and brands for growing businesses."
+          content="Jose Peláez — product and brand designer based in Madrid. Brand identities, websites and digital products, designed and built end to end."
         />
-        <meta property="og:url" content="https://josepelaez.es/" />
+        <meta property="og:url" content="https://www.josepelaez.es/" />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://www.josepelaez.es/og-image.png" />
       </Helmet>
       <CustomCursor />
       <Nav />

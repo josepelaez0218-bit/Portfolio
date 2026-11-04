@@ -84,7 +84,7 @@ const ProjectDetail = () => {
   if (project === undefined) return null;
   if (project === null) return <NotFound />;
 
-  const url = `https://josepelaez.es/work/${project.slug}`;
+  const url = `https://www.josepelaez.es/work/${project.slug}`;
   const ogImageUrl = urlForImage(project.hero).width(1200).quality(80).url();
   const heroSrc = urlForImage(project.hero).width(2400).quality(85).url();
   const heroSrcSet = [1200, 1800, 2400, 3200]
@@ -96,7 +96,7 @@ const ProjectDetail = () => {
     headline: project.title,
     description: project.description,
     image: ogImageUrl,
-    author: { "@type": "Organization", name: "Jose Peláez", alternateName: "Buen Puerto" },
+    author: { "@type": "Person", name: "Jose Peláez", url: "https://www.josepelaez.es/" },
     url,
   };
 

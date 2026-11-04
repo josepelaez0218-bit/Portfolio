@@ -93,6 +93,13 @@ const IntroText = () => {
             {ITEMS[active].text}
           </p>
         </div>
+        {/* Same pill as “Explore the Lab”. No brief form yet, so it opens an email. */}
+        <a
+          href="mailto:josepelaez0218@gmail.com?subject=New%20project"
+          className="mt-10 inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-transform duration-300 hover:scale-[1.04]"
+        >
+          Start a project <span aria-hidden="true">→</span>
+        </a>
       </div>
     </section>
   );

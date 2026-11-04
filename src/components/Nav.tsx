@@ -163,12 +163,6 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
                   style={{ animationDuration: "0.3s" }}
                 >
                   <a
-                    href="tel:+34659274031"
-                    className="text-[12px] font-light text-white/60 tracking-[0.01em] transition-colors duration-300 hover:text-white whitespace-nowrap"
-                  >
-                    +34 659 274 031
-                  </a>
-                  <a
                     href="mailto:josepelaez0218@gmail.com"
                     className="text-[12px] font-light text-white/60 tracking-[0.01em] transition-colors duration-300 hover:text-white whitespace-nowrap"
                   >

@@ -1,13 +1,16 @@
 import { useEffect, useRef } from "react";
 
-const SRCS = [
-  "/hero-trail/01.jpg",
-  "/hero-trail/02.jpg",
-  "/hero-trail/03.jpg",
-  "/hero-trail/04.jpg",
-  "/hero-trail/05.jpg",
-  "/hero-trail/06.jpg",
+// Each image carries its own alt text, swapped together with the src, so
+// screen readers and Google read what is actually on screen.
+const IMAGES = [
+  { src: "/hero-trail/01.jpg", alt: "“Brand & Product Design.” in bold white type on black, with a blue square" },
+  { src: "/hero-trail/02.jpg", alt: "Julita wine shop app on a phone, showing a Pinot Blanc product page" },
+  { src: "/hero-trail/03.jpg", alt: "Digital portrait illustration in warm orange and purple tones" },
+  { src: "/hero-trail/04.jpg", alt: "Mosaic emotional impact chart floating over a flower stem on a dark blue background" },
+  { src: "/hero-trail/05.jpg", alt: "Close-up of an eye drawn with black and white dots" },
+  { src: "/hero-trail/06.jpg", alt: "“The Kooks — Rock Concert Tonight” poster, framed and leaning against a white wall" },
 ];
+const SRCS = IMAGES.map((image) => image.src);
 
 // Source images are all 4:5 portrait — keep the pool boxes close to that
 // ratio so object-cover doesn't crop them aggressively.
@@ -129,7 +132,10 @@ const ImageTrailHero = () => {
       }
       seq = (seq + 1) % SRCS.length;
       const img = s.el.querySelector("img");
-      if (img) img.src = SRCS[seq];
+      if (img) {
+        img.src = IMAGES[seq].src;
+        img.alt = IMAGES[seq].alt;
+      }
       zC++;
       s.z = zC;
       s.visible = true;
@@ -260,14 +266,14 @@ const ImageTrailHero = () => {
   }, []);
 
   return (
-    <div ref={heroRef} className="absolute inset-0 z-10" aria-hidden="true">
+    <div ref={heroRef} className="absolute inset-0 z-10">
       {DIMS.map((_, i) => (
         <div
           key={i}
           ref={(el) => (poolRefs.current[i] = el)}
           className="absolute top-0 left-0 opacity-0 pointer-events-none overflow-hidden rounded-[4px] shadow-[0_12px_32px_rgba(0,0,0,0.12)] will-change-transform"
         >
-          <img src={SRCS[i]} alt="" draggable={false} className="w-full h-full object-cover pointer-events-none select-none" />
+          <img src={IMAGES[i].src} alt={IMAGES[i].alt} draggable={false} className="w-full h-full object-cover pointer-events-none select-none" />
         </div>
       ))}
     </div>

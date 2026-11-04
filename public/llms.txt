@@ -1,12 +1,20 @@
-# Buen Puerto
+# Jose Peláez
 
-> Creative studio building websites and brands for growing businesses.
+> Product and brand designer based in Madrid. Brand identities, websites and digital products, designed and built end to end.
+
+Brand identity, product design and the front-end build that ships it. Day to day, product interfaces at Seedtag; alongside that, brand and product work taken on directly, from naming and identity to websites.
+
+Services: brand identity & naming, product & UI design, web design & development, design systems.
+
+Contact: josepelaez0218@gmail.com
 
 ## Pages
 
-- [Home](/): Portfolio overview with selected projects.
+- [Home](/): Selected projects, the Lab and a short introduction.
+- [Seedtag Design System](/work/seedtag-design-system): A design system built for Seedtag's internal tools — shared components, patterns and tone applied across every internal web app, including Liz Agent.
+- [CECI Makeup](/work/ceci-makeup): Logo and naming for a makeup artist launching her own business — built straight from her own name.
+- [Mosaic](/work/mosaic): A creative-diagnosis tool for Seedtag's neuro-contextual AI — turning dense attention and emotion data into pre-campaign recommendations a creative team can act on. (Campaign examples shown throughout are fictional, built for demonstration only.)
 - [Emotion Quotient](/work/seedtag-emotion-quotient): A live weekly report ranking the 5 cultural moments the world felt most — built on Seedtag's own content-emotion technology.
-- [North — Banking, redrawn](/work/north-banking-app): A 7 hour sprint reimagining everyday banking for a young European audience.
-- [Fieldnotes — Writing tool](/work/fieldnotes-editor): A focused writing environment built around one idea: the page should disappear.
-- [Studio Archive](/work/studio-archive): An ongoing visual archive of studio experiments and references.
+- [ISOLA](/work/isola): Every digital piece of a pop-up store opening, designed as one journey — from the save the date to the catalogue in the guest's hand.
+- [500 Años de Historia](/work/500-anos-de-historia): Brand identity for an art exhibition.
 - [Lab](/lab): Experiments, prototypes and design explorations.
