@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { localizeProject, useLang } from "@/lib/i18n";
-import { fetchProjects } from "@/lib/sanity/queries";
-import { urlForImage } from "@/lib/sanity/image";
-import type { SanityProject } from "@/lib/sanity/types";
-import { SHAPES } from "@/components/ProjectsGallery";
+import { useLang } from "@/lib/i18n";
 
 // Taken from Jose's CV: nothing here is rounded up or made up
 const COPY = {
@@ -38,15 +34,18 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
 // How the pictures open out before settling: "row" (side by side) or "fan"
 const OPEN: "row" | "fan" = "row";
 
-// The project shown under each service, in order
-const PICTURES = ["mosaic", "seedtag-design-system", "ceci-makeup", "seedtag-events"];
+// The picture under each service, in order, with its own proportion
+// (width / height) so nothing is cropped. Transparent PNG exports as WebP.
+const PICTURES = [
+  { src: "/images/services/product-design.webp", ratio: 706 / 682, alt: "Julita wine shop on two phones: a product page and the menu" },
+  { src: "/images/services/design-systems.webp", ratio: 718 / 524, alt: "Belén de las Nieves online shop on a laptop" },
+  { src: "/images/services/brand-identity.webp", ratio: 704 / 524, alt: "The Kooks concert poster, framed against a wall" },
+  { src: "/images/services/web.webp", ratio: 700 / 429, alt: "Global Innovation Summit 2026 landing page" },
+];
 
-const Cover = ({ p }: { p: SanityProject }) =>
-  p.coverVideoUrl ? (
-    <video src={p.coverVideoUrl} autoPlay muted loop playsInline className="w-full h-full object-cover" />
-  ) : (
-    <img src={urlForImage(p.cover).width(1000).quality(80).url()} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
-  );
+const Picture = ({ i }: { i: number }) => (
+  <img src={PICTURES[i].src} alt={PICTURES[i].alt} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+);
 
 type Rect = { x: number; y: number; w: number; h: number };
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -63,13 +62,6 @@ const span = (p: number, a: number, b: number) => Math.min(1, Math.max(0, (p - a
 const Services = () => {
   const lang = useLang();
   const c = COPY[lang];
-  const [projects, setProjects] = useState<SanityProject[]>([]);
-  const pictures = PICTURES.map((slug) => projects.find((p) => p.slug === slug)).map((p) => p && localizeProject(p, lang));
-  useEffect(() => {
-    fetchProjects()
-      .then(setProjects)
-      .catch((err) => console.error("Failed to load projects from Sanity:", err));
-  }, []);
 
   // Wide screens: the services hold still while the scroll plays the pictures —
   // one rises from the bottom, the others fan out from behind it, then each
@@ -121,7 +113,7 @@ const Services = () => {
       cards.current.forEach((el, i) => {
         const li = items.current[i];
         if (!el || !li) return;
-        const ratio = SHAPES[PICTURES[i]] ?? 1.5;
+        const ratio = PICTURES[i].ratio;
         // Each picture runs a little behind the one before it
         const order = [2, 0, 1, 3][i];
         const q = Math.min(1, Math.max(0, (p - order * 0.035) / (1 - 0.105)));
@@ -181,7 +173,7 @@ const Services = () => {
       window.removeEventListener("resize", kick);
       cancelAnimationFrame(raf);
     };
-  }, [wide, projects.length]);
+  }, [wide]);
 
   return (
     <section id="services" className="relative w-full bg-background text-foreground" style={vars}>
@@ -211,28 +203,25 @@ const Services = () => {
                   <p className="text-[14px] leading-[1.5] tracking-[0.01em] text-foreground/70 max-w-[38ch]">{s.line}</p>
                 </div>
                 {/* Phones and tablets: the picture simply sits under its text */}
-                {!wide && pictures[i] && (
-                  <div className="mt-3 overflow-hidden rounded-[4px] bg-secondary" style={{ aspectRatio: String(SHAPES[PICTURES[i]] ?? 1.5) }}>
-                    <Cover p={pictures[i]!} />
+                {!wide && (
+                  <div className="mt-3 overflow-hidden rounded-[4px]" style={{ aspectRatio: String(PICTURES[i].ratio) }}>
+                    <Picture i={i} />
                   </div>
                 )}
               </li>
             ))}
           </ol>
           {wide &&
-            pictures.map((p, i) =>
-              p ? (
-                <div
-                  key={p._id}
-                  ref={(el) => (cards.current[i] = el)}
-                  aria-hidden="true"
-                  className="absolute left-0 top-0 origin-bottom overflow-hidden rounded-[4px] bg-secondary will-change-transform"
-                  style={{ zIndex: [1, 3, 2, 0][i], transform: "translate3d(0,100vh,0)" }}
-                >
-                  <Cover p={p} />
-                </div>
-              ) : null,
-            )}
+            PICTURES.map((pic, i) => (
+              <div
+                key={pic.src}
+                ref={(el) => (cards.current[i] = el)}
+                className="absolute left-0 top-0 origin-bottom overflow-hidden rounded-[4px] will-change-transform"
+                style={{ zIndex: [1, 3, 2, 0][i], transform: "translate3d(0,100vh,0)" }}
+              >
+                <Picture i={i} />
+              </div>
+            ))}
         </div>
       </div>
 
