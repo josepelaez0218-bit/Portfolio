@@ -6,7 +6,6 @@ import Footer from "@/components/Footer";
 import ClothHero from "@/components/ClothHero";
 import HeroCard from "@/components/HeroCard";
 import ImageTrailHero from "@/components/ImageTrailHero";
-import Nav from "@/components/Nav";
 import ProjectsGallery from "@/components/ProjectsGallery";
 import Services from "@/components/Services";
 import StackSheet from "@/components/StackSheet";
@@ -79,7 +78,6 @@ const Index = () => {
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://www.josepelaez.es/og-image.png" />
       </Helmet>
-      <Nav />
 
       {/* Three parts stacked like sheets: the hero stays put and the intro and
           projects slide up over it; once the projects end they stay put in turn

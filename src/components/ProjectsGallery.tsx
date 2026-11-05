@@ -127,17 +127,18 @@ const ProjectsGallery = () => {
                   to={`/work/${p.slug}`}
                   onMouseEnter={() => setHover(i)}
                   onClick={(e: MouseEvent<HTMLAnchorElement>) => open(e, p.slug, i)}
-                  className={`group grid grid-cols-[2.5rem_minmax(0,1fr)] md:grid-cols-[4rem_minmax(0,1fr)_auto] items-baseline gap-x-4 py-6 md:py-8 transition-colors duration-300 ${
+                  className={`group grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[4rem_minmax(0,1fr)_auto] items-baseline gap-x-4 py-6 md:py-8 transition-colors duration-300 ${
                     hover !== null && hover !== i ? "text-foreground/25" : "text-foreground"
                   }`}
                 >
-                  <span className="text-[14px] opacity-60 tabular-nums tracking-[0.01em]">{pad(i)}</span>
+                  {/* Phones: the number goes to the right of the name, so the cover can take the full width */}
+                  <span className="order-2 md:order-none justify-self-end md:justify-self-auto text-[14px] opacity-60 tabular-nums tracking-[0.01em]">{pad(i)}</span>
                   {/* One line per name, so every row is the same height */}
-                  <h2 className="font-display font-normal leading-[1.15] tracking-[-0.02em] text-[clamp(1.5rem,4.2vw,4.75rem)] whitespace-nowrap overflow-hidden text-ellipsis transition-transform duration-500 group-hover:translate-x-3">
+                  <h2 className="order-1 md:order-none font-display font-normal leading-[1.15] tracking-[-0.02em] text-[clamp(1.5rem,4.2vw,4.75rem)] whitespace-nowrap overflow-hidden text-ellipsis transition-transform duration-500 group-hover:translate-x-3">
                     {p.title}
                   </h2>
                   <span className="hidden md:block text-[14px] opacity-60">{(p.tags ?? []).join(" · ")}</span>
-                  <span className="md:hidden col-start-2 mt-4 block aspect-[3/2] overflow-hidden rounded-[4px] bg-secondary">
+                  <span className="md:hidden order-3 col-span-2 mt-4 block aspect-[3/2] overflow-hidden rounded-[4px] bg-secondary">
                     <Cover p={p} />
                   </span>
                 </Row>

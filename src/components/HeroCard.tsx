@@ -5,7 +5,7 @@ import { useT } from "@/lib/i18n";
 const KEY = "pj-card-closed";
 
 /**
- * The hero's menu card, at the top left: a short intro, the way to start a
+ * The hero's menu card, at the top left on every screen: a short intro, the way to start a
  * project, and Work · Contact · EN/ES. It belongs to the hero, so the projects
  * sheet slides up over it like over the rest of the hero. Opens by default;
  * the visitor can fold it to “Jose Peláez +”, and that holds for the visit.
@@ -39,7 +39,7 @@ const HeroCard = () => {
   return (
     <div
       data-menu-card
-      className={`absolute z-20 left-3 bottom-3 md:bottom-auto md:top-3 rounded-[4px] bg-white text-foreground animate-fade-up transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      className={`absolute z-20 left-3 top-3 rounded-[4px] bg-white text-foreground animate-fade-up transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
         shown ? "right-3 md:right-auto md:w-[min(44vw,420px)] lg:w-[min(30vw,420px)]" : "w-[180px]"
       }`}
       style={{ animationDelay: "0.6s", animationFillMode: "backwards" }}
@@ -84,8 +84,8 @@ const HeroCard = () => {
             >
               {t("startProject")} <span aria-hidden="true">→</span>
             </a>
-            {/* The menu, on wide screens (phones keep it in the bar at the top) */}
-            <nav aria-label="Menu" className="hidden md:flex items-center gap-6 mt-2 pt-5 border-t border-foreground/15 text-[14px] tracking-[0.01em]">
+            {/* The menu: the site's only one, on every screen size */}
+            <nav aria-label="Menu" className="flex items-center gap-6 mt-2 pt-5 border-t border-foreground/15 text-[14px] tracking-[0.01em]">
               <a href="#work" tabIndex={shown ? 0 : -1} onClick={(e) => { e.preventDefault(); goTo("work"); }} className="text-foreground/70 hover:text-foreground">
                 {t("work")}
               </a>
