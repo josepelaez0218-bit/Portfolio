@@ -3,6 +3,7 @@ import DotsHello, { DOTS, type DotsHelloHandle } from "@/components/lab-essay/pi
 import { ease, range } from "@/components/lab-essay/lib";
 import ContactForm from "@/components/ContactForm";
 import { useT } from "@/lib/i18n";
+import CycleIcon from "@/components/CycleIcon";
 
 /**
  * The close of the home: who I am on the left, me waving in blue dots on the
@@ -114,7 +115,7 @@ const ClosingHello = () => {
                 onClick={() => setBriefOpen(true)}
                 className="mt-4 self-start inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-transform duration-300 hover:scale-[1.04]"
               >
-                {t("startProject")} <span aria-hidden="true">→</span>
+                {t("startProject")} <CycleIcon />
               </button>
             </div>
           )}

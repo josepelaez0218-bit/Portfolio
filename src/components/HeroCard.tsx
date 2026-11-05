@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { onLangChange, readLang, saveLang, type Lang } from "@/lib/lang";
 import { useT } from "@/lib/i18n";
+import CycleIcon from "@/components/CycleIcon";
 
 const KEY = "pj-card-closed";
 
@@ -82,7 +83,7 @@ const HeroCard = () => {
               }}
               className="mt-1 self-start inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-transform duration-300 hover:scale-[1.04]"
             >
-              {t("startProject")} <span aria-hidden="true">→</span>
+              {t("startProject")} <CycleIcon />
             </a>
             {/* The menu: the site's only one, on every screen size */}
             <nav aria-label="Menu" className="flex items-center gap-6 mt-2 pt-5 border-t border-foreground/15 text-[14px] tracking-[0.01em]">
