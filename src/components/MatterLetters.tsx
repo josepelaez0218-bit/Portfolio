@@ -4,8 +4,6 @@ import Matter from "matter-js";
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".split("");
 const FONT_SIZE_DESKTOP = 64;
 const FONT_SIZE_MOBILE = 40;
-const FONT_FAMILY = "'Inter', sans-serif";
-const FONT_WEIGHT = 600;
 
 const LETTER_COUNT = 120;
 const ACCENT_RATIO = 0.12;
@@ -14,8 +12,15 @@ type LetterBody = Matter.Body & { _char: string; _accent: boolean };
 
 const randChar = () => CHARS[Math.floor(Math.random() * CHARS.length)];
 
-const MatterLetters = () => {
+/**
+ * Letters raining down a slope, drawn in the section's --foreground (most of
+ * them faint, a few at full strength); they can be grabbed and thrown. Only
+ * runs while it's on screen.
+ */
+const MatterLetters = ({ fontFamily = "'Inter', sans-serif", fontWeight = 600 }: { fontFamily?: string; fontWeight?: number }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const FONT_FAMILY = fontFamily;
+  const FONT_WEIGHT = fontWeight;
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -210,9 +215,21 @@ const MatterLetters = () => {
     Composite.add(world, mouseConstraint);
     render.mouse = mouse;
 
-    Render.run(render);
     const runner = Runner.create();
-    Runner.run(runner, engine);
+    let running = false;
+    const setRunning = (on: boolean) => {
+      if (on === running) return;
+      running = on;
+      if (on) {
+        Render.run(render);
+        Runner.run(runner, engine);
+      } else {
+        Render.stop(render);
+        Runner.stop(runner);
+      }
+    };
+    const io = new IntersectionObserver(([entry]) => setRunning(entry.isIntersecting));
+    io.observe(container);
 
     const onResize = () => {
       width = container.clientWidth;
@@ -230,15 +247,15 @@ const MatterLetters = () => {
     window.addEventListener("resize", onResize);
 
     return () => {
+      io.disconnect();
       window.removeEventListener("resize", onResize);
-      Render.stop(render);
-      Runner.stop(runner);
+      setRunning(false);
       Composite.clear(world, false);
       Engine.clear(engine);
       render.canvas.remove();
       render.textures = {};
     };
-  }, []);
+  }, [FONT_FAMILY, FONT_WEIGHT]);
 
   return <div ref={containerRef} className="absolute inset-0 z-10" aria-hidden="true" />;
 };

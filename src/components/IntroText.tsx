@@ -59,7 +59,7 @@ const IntroText = () => {
   }, [active]);
 
   return (
-    <section id="intro" className="relative z-10 w-full bg-background px-5 md:px-10 py-32 md:py-48">
+    <section id="intro" className="relative z-10 w-full bg-background px-3 py-32 md:py-48">
       <div className="max-w-[560px] mx-auto flex flex-col items-center text-center">
         <div className="flex items-center gap-3 mb-6">
           {ITEMS.map((item, i) => (

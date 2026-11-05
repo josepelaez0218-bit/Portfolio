@@ -6,6 +6,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["'Inter'", "sans-serif"],
+        display: ["'Funnel Display'", "'Inter'", "sans-serif"],
         mono: ["'IBM Plex Mono'", "monospace"],
         serif: ["'Platypi'", "serif"],
       },

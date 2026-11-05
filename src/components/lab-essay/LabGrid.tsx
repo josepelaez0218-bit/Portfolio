@@ -28,7 +28,7 @@ const LabGrid = () => {
   if (!items.length) return null;
 
   return (
-    <section className="bg-background text-foreground px-5 md:px-10 pt-20 pb-20 md:pt-32 md:pb-32" aria-label="Lab pieces">
+    <section className="bg-background text-foreground px-3 pt-20 pb-20 md:pt-32 md:pb-32" aria-label="Lab pieces">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-12 md:gap-y-16 items-start">
         {items.map((item, i) => (
           <figure

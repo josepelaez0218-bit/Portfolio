@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Footer from "@/components/Footer";
-import Nav from "@/components/Nav";
-import { fetchProjectBySlug } from "@/lib/sanity/queries";
+import { fetchProjectBySlug, fetchProjects } from "@/lib/sanity/queries";
 import { urlForImage } from "@/lib/sanity/image";
 import type { SanityProject } from "@/lib/sanity/types";
 import NotFound from "./NotFound";
@@ -22,6 +21,16 @@ const ProjectDetail = () => {
   const lang = useLang();
   const t = useT();
   const project = rawProject ? localizeProject(rawProject, lang) : rawProject;
+  // Its number in the index (passed along when opened from it, else looked up)
+  const location = useLocation();
+  const [all, setAll] = useState<SanityProject[]>([]);
+  useEffect(() => {
+    fetchProjects().then(setAll).catch(() => {});
+  }, []);
+  const found = all.findIndex((p) => p.slug === slug);
+  const number = found >= 0 ? found : ((location.state as { index?: number } | null)?.index ?? null);
+  const nextRaw = found >= 0 && all.length > 1 ? all[(found + 1) % all.length] : null;
+  const next = nextRaw ? localizeProject(nextRaw, lang) : null;
   const [active, setActive] = useState<string>("");
 
   useEffect(() => {
@@ -120,13 +129,28 @@ const ProjectDetail = () => {
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
       </Helmet>
 
-      <Nav subtitle={project.title} />
-
-      <h1 className="sr-only">{project.title}</h1>
+      {/* No navbar on a case: only the way back, then the project's row from the index, now the page header: same number,
+          name and tags, so opening a project reads as one continuous move */}
+      <header className="px-3 pt-5 md:pt-7 bg-background">
+        <Link to="/#work" className="inline-block py-1 text-[14px] text-foreground/70 tracking-[0.01em] transition-colors duration-300 hover:text-foreground">
+          ← {t("back")}
+        </Link>
+        <div className="h-12 md:h-14" aria-hidden="true" />
+        <div
+          className="-mx-3 px-3 grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_auto] items-baseline gap-x-4 py-6 md:py-8 border-b border-foreground/15"
+          style={{ viewTransitionName: "project-row" } as React.CSSProperties}
+        >
+          <span className="text-[14px] text-foreground/60 tabular-nums tracking-[0.01em]">
+            {number !== null ? String(number + 1).padStart(2, "0") : ""}
+          </span>
+          <h1 className="font-display font-normal leading-[1.15] tracking-[-0.02em] text-[clamp(1.5rem,4.2vw,4.75rem)] whitespace-nowrap overflow-hidden text-ellipsis">{project.title}</h1>
+          <span className="hidden md:block text-[14px] text-foreground/60">{(project.tags ?? []).join(" · ")}</span>
+        </div>
+      </header>
 
       {project.heroBleed ? (
         /* Hero, full-bleed — no frame, no gray section */
-        <div className="w-full overflow-hidden reveal" data-reveal>
+        <div className="w-full overflow-hidden reveal" data-reveal style={{ viewTransitionName: "project-cover" } as React.CSSProperties}>
           {project.heroVideoUrl ? (
             <video
               src={project.heroVideoUrl}
@@ -148,9 +172,9 @@ const ProjectDetail = () => {
         </div>
       ) : (
         /* Hero, framed gray section */
-        <section className="w-full bg-[hsl(0_0%_92%)] px-5 md:px-10 pt-28 pb-20 md:pt-32 md:pb-32">
+        <section className="w-full bg-[#f5f5f5] px-3 pt-10 pb-20 md:pt-14 md:pb-32">
           <div className="max-w-[1900px] mx-auto">
-            <div className="w-full overflow-hidden reveal" data-reveal>
+            <div className="w-full overflow-hidden reveal" data-reveal style={{ viewTransitionName: "project-cover" } as React.CSSProperties}>
               {project.heroVideoUrl ? (
                 <video
                   src={project.heroVideoUrl}
@@ -174,24 +198,48 @@ const ProjectDetail = () => {
         </section>
       )}
 
+      {/* The project at a glance, once: role, team, date and the live site */}
+      {(() => {
+        const ok = (v?: string) => (v && !/TBD/.test(v) ? v : null);
+        const facts = [
+          [t("role"), ok(project.role)],
+          [t("team"), ok(project.team)],
+          [t("timeline"), ok(project.timeline)],
+        ].filter(([, v]) => v) as [string, string][];
+        if (!facts.length && !project.liveUrl) return null;
+        return (
+          <div className="bg-background px-3 pt-10 md:pt-14">
+            <dl className="-mx-3 px-3 grid grid-cols-2 md:grid-cols-12 gap-x-6 gap-y-6 pb-10 md:pb-14 border-b border-foreground/15">
+              {facts.map(([k, v]) => (
+                <div key={k} className="md:col-span-3 flex flex-col gap-1.5">
+                  <dt className="text-[14px] font-medium tracking-[0.01em] text-foreground/70">{k}</dt>
+                  <dd className="text-[16px] text-foreground">{v}</dd>
+                </div>
+              ))}
+              {project.liveUrl && (
+                <div className="col-span-2 md:col-span-3 md:justify-self-end self-end">
+                  <a
+                    href={project.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-transform duration-300 hover:scale-[1.04]"
+                  >
+                    {t("visitLive")} <span aria-hidden="true">↗</span>
+                  </a>
+                </div>
+              )}
+            </dl>
+          </div>
+        );
+      })()}
+
       {/* Content */}
-      <main className="bg-background px-5 md:px-10 pt-20 md:pt-32 pb-20 md:pb-32">
+      <main className="bg-background px-3 pt-16 md:pt-24 pb-20 md:pb-32">
         <div className="max-w-[1900px] mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-[180px_1fr] gap-12 lg:gap-24">
             {/* Sidebar */}
             <aside className="hidden lg:block">
               <nav className="sticky top-24">
-                {project.liveUrl && (
-                  <a
-                    href={project.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mb-8 inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
-                  >
-                    {t("visitLive")}
-                    <span aria-hidden="true">↗</span>
-                  </a>
-                )}
                 <ul className="flex flex-col gap-3">
                   {sections.map((s) => {
                     const id = slugifyLabel(s.label);
@@ -209,7 +257,7 @@ const ProjectDetail = () => {
                           }}
                           className={`text-[14px] tracking-[0.01em] transition-all duration-300 ${
                             active === id
-                              ? "text-foreground font-bold"
+                              ? "text-foreground font-medium"
                               : "text-foreground/60 hover:text-foreground font-normal"
                           }`}
                         >
@@ -219,39 +267,16 @@ const ProjectDetail = () => {
                     );
                   })}
                 </ul>
-                <div className="mt-10 pt-6 border-t border-border/60 w-10">
-                  <Link
-                    to="/"
-                    className="text-[14px] font-normal text-foreground/60 tracking-[0.01em] transition-colors duration-300 hover:text-foreground"
-                  >{t("back")}</Link>
-                </div>
               </nav>
             </aside>
 
             {/* Main */}
             <div className="max-w-[820px] space-y-24 md:space-y-32">
-              {project.liveUrl && (
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="lg:hidden inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
-                >
-                  {t("visitLive")}
-                  <span aria-hidden="true">↗</span>
-                </a>
-              )}
               {sections.map((s) => {
                 const id = slugifyLabel(s.label);
                 return (
                   <section key={id} id={id} className="scroll-mt-10 reveal" data-reveal>
-                    <div className="text-[14px] text-foreground/60 mb-6 tracking-[0.01em]">
-                      {project.timeline}
-                    </div>
-                    <h2
-                      className="font-sans font-semibold text-foreground leading-[1.15] tracking-[-0.005em] mb-8"
-                      style={{ fontSize: "24px" }}
-                    >
+                    <h2 className="text-lead text-foreground mb-6 md:mb-8">
                       {s.label}
                     </h2>
                     {s.stats && s.stats.length > 0 && (
@@ -259,12 +284,12 @@ const ProjectDetail = () => {
                         {s.stats.map((stat, sIndex) => (
                           <div
                             key={sIndex}
-                            className="rounded-[4px] bg-secondary/60 px-5 py-4 flex flex-col gap-1"
+                            className="rounded-[4px] bg-[#f5f5f5] px-5 py-4 flex flex-col gap-1"
                           >
-                            <span className="font-sans font-semibold text-foreground leading-[1.1] tracking-[-0.01em] text-[28px] md:text-[34px]">
+                            <span className="font-display font-normal text-foreground leading-[1] tracking-[-0.02em] text-[32px] md:text-[40px]">
                               {stat.value}
                             </span>
-                            <span className="text-[12px] font-normal text-foreground/60 tracking-[0.01em]">
+                            <span className="text-[14px] font-normal text-foreground/60 tracking-[0.01em]">
                               {stat.label}
                             </span>
                           </div>
@@ -328,20 +353,9 @@ const ProjectDetail = () => {
                             className="w-full h-auto"
                           />
                           {s.videoCaption && (
-                            <p className="mt-2 text-[12px] font-normal text-foreground/60 tracking-[0.01em]">
+                            <p className="mt-3 text-[14px] font-normal text-foreground/60 tracking-[0.01em]">
                               {s.videoCaption}
                             </p>
-                          )}
-                          {project.liveUrl && (
-                            <a
-                              href={project.liveUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-4 inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-opacity duration-300 hover:opacity-80"
-                            >
-                              {t("visitLive")}
-                              <span aria-hidden="true">↗</span>
-                            </a>
                           )}
                         </div>
                       );
@@ -356,6 +370,24 @@ const ProjectDetail = () => {
           </div>
         </div>
       </main>
+
+      {/* Next project, as a row of the index */}
+      {next && (
+        <div className="bg-background px-3 pb-20 md:pb-32">
+          <p className="mb-5 text-[14px] font-medium tracking-[0.01em] text-foreground/70">{t("nextProject")}</p>
+          <Link
+            to={`/work/${next.slug}`}
+            onClick={() => window.scrollTo(0, 0)}
+            className="-mx-3 px-3 group grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_auto] items-baseline gap-x-4 py-6 md:py-8 border-y border-foreground/15"
+          >
+            <span className="text-[14px] text-foreground/60 tabular-nums tracking-[0.01em]">{String(((found + 1) % all.length) + 1).padStart(2, "0")}</span>
+            <span className="font-display font-normal leading-[1.15] tracking-[-0.02em] text-[clamp(1.5rem,4.2vw,4.75rem)] whitespace-nowrap overflow-hidden text-ellipsis transition-transform duration-500 group-hover:translate-x-3">
+              {next.title} <span aria-hidden="true">→</span>
+            </span>
+            <span className="hidden md:block text-[14px] text-foreground/60">{(next.tags ?? []).join(" · ")}</span>
+          </Link>
+        </div>
+      )}
       <Footer />
     </>
   );

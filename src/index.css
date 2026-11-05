@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Platypi:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Platypi:wght@300;400;500&family=Funnel+Display:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -92,9 +92,15 @@
   -webkit-user-drag: none;
 }
 
-/* Home: magnetic sheets (see Index.tsx) */
-html.snap-sheets { scroll-snap-type: y proximity; }
-.snap-point { height: 0; scroll-snap-align: start; }
+/* Opening a project: its index row glides up into the case header, the rest cross-fades */
+::view-transition-group(project-row) { animation-duration: 0.7s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+/* …and the cover under the pointer grows into the case's full-width image */
+::view-transition-group(project-cover) { animation-duration: 0.8s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+::view-transition-old(project-cover), ::view-transition-new(project-cover) { height: 100%; object-fit: cover; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.45s; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
 
 /* Animations */
 @keyframes fadeUp {

@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
 import { onLangChange, readLang, saveLang, type Lang } from "@/lib/lang";
 import { useT } from "@/lib/i18n";
-import { useHideOnScroll } from "@/lib/useHideOnScroll";
 
 const KEY = "pj-card-closed";
 
 /**
- * The site's menu, always on screen at the top left: a short intro, the way to
- * start a project, and Work · Contact · EN/ES. Solid white on the grey hero,
- * where it opens by default; once the white sheets slide under it, it turns to
- * frosted glass and folds itself down to “Jose Peláez +” (open it any time).
- * Folding it by hand holds for the visit. Phones: only in the hero, at the bottom.
+ * The hero's menu card, at the top left: a short intro, the way to start a
+ * project, and Work · Contact · EN/ES. It belongs to the hero, so the projects
+ * sheet slides up over it like over the rest of the hero. Opens by default;
+ * the visitor can fold it to “Jose Peláez +”, and that holds for the visit.
  */
 const HeroCard = () => {
   const [open, setOpen] = useState(() => {
@@ -20,24 +18,7 @@ const HeroCard = () => {
       return true;
     }
   });
-  // Past the hero: glass, folded on its own (phones: hidden)
-  const [past, setPast] = useState(false);
-  const [openedPast, setOpenedPast] = useState(false);
-  useEffect(() => {
-    const check = () => {
-      const p = window.scrollY > window.innerHeight * 0.5;
-      setPast((was) => {
-        if (was !== p) setOpenedPast(false);
-        return p;
-      });
-    };
-    check();
-    window.addEventListener("scroll", check, { passive: true });
-    return () => window.removeEventListener("scroll", check);
-  }, []);
-  const shown = past ? openedPast : open;
-  // Like the navbar: out of the way while scrolling down (unless it's open)
-  const scrolledAway = useHideOnScroll() && !shown;
+  const shown = open;
 
   const [lang, setLang] = useState<Lang>(readLang);
   const t = useT();
@@ -45,7 +26,6 @@ const HeroCard = () => {
   const goTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   const toggle = () => {
-    if (past) return setOpenedPast((o) => !o);
     setOpen((o) => {
       try {
         sessionStorage.setItem(KEY, o ? "1" : "0");
@@ -58,18 +38,11 @@ const HeroCard = () => {
 
   return (
     <div
-      className={`fixed z-[205] left-5 bottom-5 md:bottom-auto md:left-10 md:top-6 rounded-[4px] text-foreground animate-fade-up transition-[width,background-color,border-color,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        past
-          ? "bg-white/55 backdrop-blur-2xl backdrop-saturate-[1.8] border border-black/[0.06] max-md:opacity-0 max-md:pointer-events-none"
-          : "bg-white border border-transparent"
-      } ${shown ? "right-5 md:right-auto md:w-[min(44vw,420px)] lg:w-[min(30vw,420px)]" : "w-[180px]"}`}
-      style={{
-        animationDelay: "0.6s",
-        animationFillMode: "backwards",
-        translate: scrolledAway ? "0 -140%" : "0 0",
-        // One list, so it doesn’t override the width / glass transitions
-        transition: ["translate", "width", "background-color", "border-color", "opacity"].map((p) => `${p} 500ms cubic-bezier(0.22,1,0.36,1)`).join(", "),
-      }}
+      data-menu-card
+      className={`absolute z-20 left-3 bottom-3 md:bottom-auto md:top-3 rounded-[4px] bg-white text-foreground animate-fade-up transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        shown ? "right-3 md:right-auto md:w-[min(44vw,420px)] lg:w-[min(30vw,420px)]" : "w-[180px]"
+      }`}
+      style={{ animationDelay: "0.6s", animationFillMode: "backwards" }}
     >
       {/* The name is the handle: it folds and unfolds the card */}
       <button
@@ -104,7 +77,6 @@ const HeroCard = () => {
               tabIndex={shown ? 0 : -1}
               onClick={(e) => {
                 e.preventDefault();
-                setOpenedPast(false);
                 window.dispatchEvent(new Event("open-brief"));
                 document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
               }}
@@ -114,10 +86,10 @@ const HeroCard = () => {
             </a>
             {/* The menu, on wide screens (phones keep it in the bar at the top) */}
             <nav aria-label="Menu" className="hidden md:flex items-center gap-6 mt-2 pt-5 border-t border-foreground/15 text-[14px] tracking-[0.01em]">
-              <a href="#work" tabIndex={shown ? 0 : -1} onClick={(e) => { e.preventDefault(); setOpenedPast(false); goTo("work"); }} className="text-foreground/70 hover:text-foreground">
+              <a href="#work" tabIndex={shown ? 0 : -1} onClick={(e) => { e.preventDefault(); goTo("work"); }} className="text-foreground/70 hover:text-foreground">
                 {t("work")}
               </a>
-              <a href="#contact" tabIndex={shown ? 0 : -1} onClick={(e) => { e.preventDefault(); setOpenedPast(false); goTo("contact"); }} className="text-foreground/70 hover:text-foreground">
+              <a href="#contact" tabIndex={shown ? 0 : -1} onClick={(e) => { e.preventDefault(); goTo("contact"); }} className="text-foreground/70 hover:text-foreground">
                 {t("contact")}
               </a>
               <span className="ml-auto flex items-center gap-1.5" role="group" aria-label="Language">

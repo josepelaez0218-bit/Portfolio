@@ -25,7 +25,7 @@ const Footer = () => {
 
   return (
     <footer className="relative z-10 w-full bg-[#0b0b0b] text-white">
-      <div className="px-5 md:px-10 pt-16 pb-8 md:pt-24 md:pb-10 flex flex-col gap-16 md:gap-24">
+      <div className="px-3 pt-16 pb-8 md:pt-24 md:pb-10 flex flex-col gap-16 md:gap-24">
         <div className="grid grid-cols-2 md:grid-cols-12 gap-x-6 gap-y-10">
           <div className="col-span-2 md:col-span-6 flex flex-col gap-2">
             <p className="text-[14px] font-medium tracking-[0.01em]">Jose Peláez</p>

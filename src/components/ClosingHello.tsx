@@ -80,14 +80,13 @@ const ClosingHello = () => {
   return (
     // Starts at the same height as the projects index (pt-16 / md:pt-24), so
     // each sheet reads like a slide; the text sits centred on the dots box.
-    <section ref={sectionRef} id="contact" className="relative z-10 w-full bg-background text-foreground px-5 md:px-10 pt-16 md:pt-24 pb-5 md:pb-10 lg:min-h-screen">
+    <section ref={sectionRef} id="contact" className="relative z-10 w-full bg-background text-foreground px-3 pt-16 md:pt-24 pb-5 md:pb-10 lg:min-h-screen">
       {/* A line on top, edge to edge, the same grey as the index rows */}
       <div aria-hidden="true" className="absolute top-0 inset-x-0 h-px bg-foreground/15" />
       <div className="w-full grid grid-cols-1 lg:grid-cols-12 lg:items-start gap-x-10 gap-y-12">
         {/* What to do next: the brief */}
         {/* Label, text and form start together at the top, where "Projects" sits on the index */}
         <div className="lg:col-span-5 flex flex-col gap-8">
-          <p className="text-[14px] font-medium tracking-[0.01em] text-foreground/70">{t("letsTalk")}</p>
           {briefOpen ? (
             <div key="brief" className="flex flex-col gap-6 animate-fade-up" style={{ animationDuration: "0.5s" }}>
               <ContactForm />
@@ -106,6 +105,9 @@ const ClosingHello = () => {
               </p>
               <p className="text-[14px] text-foreground/70 tracking-[0.01em] max-w-[46ch]">
                 {t("closeLine")}
+              </p>
+              <p className="text-[14px] text-foreground/70 tracking-[0.01em] max-w-[46ch]">
+                {t("closeMore")}
               </p>
               <button
                 type="button"

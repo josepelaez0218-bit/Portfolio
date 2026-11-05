@@ -20,8 +20,8 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
   const hidden = useHideOnScroll();
   useEffect(() => onLangChange(setLang), []);
 
-  // On the home (wide screens) the card at the top left is the menu, so these
-  // links stay out; phones keep them, since the card only shows in the hero.
+  // On the home (wide screens) the hero's card is the menu: these links never
+  // show there. Phones keep them, since the card sits at the foot of the hero.
   const inCard = onHome;
 
   const goTo =
@@ -48,7 +48,7 @@ const Nav = ({ subtitle }: { subtitle?: string }) => {
     <>
       {/* Name on the left, links on the right, all in the same 14px text */}
       <nav
-        className="fixed top-0 left-0 right-0 z-[200] px-5 md:px-10 pt-5 md:pt-7 animate-slide-down mix-blend-difference text-white pointer-events-none"
+        className="fixed top-0 left-0 right-0 z-[200] px-3 pt-5 md:pt-7 animate-slide-down mix-blend-difference text-white pointer-events-none"
         style={{ translate: hidden ? "0 -100%" : "0 0", transition: "translate 500ms cubic-bezier(0.22,1,0.36,1)" }}
       >
         <div className="relative flex items-center justify-between min-h-[20px]">

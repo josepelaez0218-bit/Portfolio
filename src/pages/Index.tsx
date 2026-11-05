@@ -8,6 +8,7 @@ import HeroCard from "@/components/HeroCard";
 import ImageTrailHero from "@/components/ImageTrailHero";
 import Nav from "@/components/Nav";
 import ProjectsGallery from "@/components/ProjectsGallery";
+import Services from "@/components/Services";
 import StackSheet from "@/components/StackSheet";
 import { fetchHome } from "@/lib/sanity/queries";
 
@@ -35,18 +36,9 @@ const Index = () => {
     };
   }, []);
 
-  // Each visit draws its hero: the image trail or the cloth in the wind.
-  // Kept for the whole visit, so coming back to the home doesn't reshuffle it;
-  // ?hero=cloth or ?hero=trail picks one.
+  // The cloth, or the image trail where WebGL isn't available
   const [hero, setHero] = useState<"cloth" | "trail">(pickHero);
 
-  // Magnetic sheets: stop scrolling near the start of a sheet and the page
-  // settles onto it (proximity snap, so the index can still be read freely).
-  useEffect(() => {
-    const html = document.documentElement;
-    html.classList.add("snap-sheets");
-    return () => html.classList.remove("snap-sheets");
-  }, []);
 
   // Arriving from another page via a nav link (/#work,
   // /#contact): scroll to that section once it's mounted, since a route change
@@ -88,15 +80,12 @@ const Index = () => {
         <meta property="og:image" content="https://www.josepelaez.es/og-image.png" />
       </Helmet>
       <Nav />
-      {/* The menu card: fixed, above every sheet */}
-      <HeroCard />
 
       {/* Three parts stacked like sheets: the hero stays put and the intro and
           projects slide up over it; once the projects end they stay put in turn
           and “Time to say hello” and the footer slide up over them. */}
       <div className="relative">
-      <div aria-hidden="true" className="snap-point" />
-      <section className="sticky top-0 z-0 w-full h-[100dvh] overflow-hidden bg-[#F5F5F5] flex items-center justify-center touch-pan-y">
+      <section data-hero className="sticky top-0 z-0 w-full h-[100dvh] overflow-hidden bg-[#F5F5F5] flex items-center justify-center touch-pan-y">
         <div className="relative z-0 w-full pointer-events-none px-6 flex items-center justify-center">
           {heroTitle !== null && (
             <h1
@@ -124,14 +113,13 @@ const Index = () => {
         </div>
 
         {hero === "cloth" ? <ClothHero onUnsupported={() => setHero("trail")} /> : <ImageTrailHero />}
+        <HeroCard />
       </section>
 
-      {/* Snap points sit in the normal flow (the sheets themselves are sticky) */}
-      <div aria-hidden="true" className="snap-point" />
       <StackSheet className="z-10">
         <ProjectsGallery />
+        <Services />
       </StackSheet>
-      <div aria-hidden="true" className="snap-point" />
       <div className="relative z-20 bg-background">
         {/* The close: how to get in touch, and me waving in dots */}
         <ClosingHello />
@@ -142,21 +130,11 @@ const Index = () => {
   );
 };
 
-const HERO_KEY = "pj-hero";
+// The hero is always the cloth: the projects index already has an image that
+// follows the pointer, so the image trail would repeat it. The trail stays as
+// the fallback for browsers without WebGL (?hero=trail shows it).
 function pickHero(): "cloth" | "trail" {
-  const q = new URLSearchParams(window.location.search).get("hero");
-  let pick: "cloth" | "trail" | null = q === "cloth" || q === "trail" ? q : null;
-  try {
-    const saved = sessionStorage.getItem(HERO_KEY);
-    // Dev server: each reload swaps to the other one, to compare them
-    if (!pick && import.meta.env.DEV && (saved === "cloth" || saved === "trail")) pick = saved === "cloth" ? "trail" : "cloth";
-    if (!pick) pick = saved === "cloth" || saved === "trail" ? saved : null;
-    pick ??= Math.random() < 0.5 ? "cloth" : "trail";
-    sessionStorage.setItem(HERO_KEY, pick);
-  } catch {
-    pick ??= Math.random() < 0.5 ? "cloth" : "trail";
-  }
-  return pick;
+  return new URLSearchParams(window.location.search).get("hero") === "trail" ? "trail" : "cloth";
 }
 
 export default Index;
