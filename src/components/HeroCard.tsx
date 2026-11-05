@@ -70,7 +70,7 @@ const HeroCard = () => {
         <div className="overflow-hidden">
           <div className="flex flex-col gap-3 md:gap-5 px-5 pb-5 pt-3 md:px-8 md:pb-8 md:pt-5">
             <p className="text-lead text-foreground text-balance">{t("heroIntro")}</p>
-            <p className="text-[14px] text-foreground/70 tracking-[0.01em] max-w-[52ch]">
+            <p className="whitespace-pre-line text-[14px] text-foreground/70 tracking-[0.01em] max-w-[52ch]">
               {t("heroLine")}
             </p>
             <a
