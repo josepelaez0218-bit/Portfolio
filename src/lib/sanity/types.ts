@@ -7,6 +7,8 @@ export interface SanityStat {
 
 export interface SanitySectionBlock {
   label: string;
+  /** A sentence that says the section (optional): shown big under the tag */
+  headline?: string;
   body: string;
   stats?: SanityStat[];
   images?: ({ alt: string } & SanityImageSource)[];
@@ -51,6 +53,8 @@ export interface SanityProject {
   heroBleed?: boolean;
   heroVideoUrl?: string;
   liveUrl?: string;
+  /** The index opens the live site (new tab) instead of the case page */
+  openLive?: boolean;
   timeline?: string;
   role?: string;
   team?: string;

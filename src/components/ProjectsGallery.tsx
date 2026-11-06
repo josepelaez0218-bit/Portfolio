@@ -10,7 +10,11 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
 
 // The case pages are closed for now: the rows show the work but don't open
 // it (set back to true to link them again; App.tsx sends /work/… home too)
-export const CASES_OPEN = false;
+export const CASES_OPEN = import.meta.env.DEV; // every case opens on localhost while we design them
+// On the live site only these case pages open (the rest of the rows stay
+// unclickable; projects set to "open the live site" link out instead)
+export const PUBLIC_CASES = new Set(["tactica"]);
+export const caseOpen = (slug: string) => CASES_OPEN || PUBLIC_CASES.has(slug);
 
 // Each project's preview has its own shape (width / height), so moving down
 // the list changes the rhythm. Covers that are mockups keep the proportion
@@ -23,6 +27,7 @@ export const SHAPES: Record<string, number> = {
   "seedtag-events": 16 / 10, // mockup, 2880×1800
   "seedtag-emotion-quotient": 3 / 2, // mockup, 1600×1067
   isola: 4 / 5,
+  tactica: 16 / 9, // phones on orange, 1920×1080
 };
 
 // Same area for every shape: that of a 3:2 box 32vw (at most 600px) wide
@@ -39,9 +44,33 @@ const Cover = ({ p }: { p: SanityProject }) =>
     <img src={urlForImage(p.cover).width(900).quality(80).url()} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
   );
 
-/** A row of the index: a link to its case, or just the row while cases are closed. */
-const Row = ({ to, onClick, ...rest }: { to: string; onClick: (e: MouseEvent<HTMLAnchorElement>) => void; onMouseEnter: () => void; className: string; children: React.ReactNode }) =>
-  CASES_OPEN ? <Link to={to} onClick={onClick} {...rest} /> : <div {...rest} />;
+/**
+ * A row of the index: a link to its case, or — when the project says so in
+ * Sanity ("Open the live site instead") — straight to its live site in a new
+ * tab; just the row while cases are closed.
+ */
+const Row = ({
+  to,
+  open,
+  external,
+  onClick,
+  ...rest
+}: {
+  to: string;
+  open: boolean;
+  external?: string;
+  onClick: (e: MouseEvent<HTMLAnchorElement>) => void;
+  onMouseEnter: () => void;
+  className: string;
+  children: React.ReactNode;
+}) =>
+  external ? (
+    <a href={external} target="_blank" rel="noopener noreferrer" {...rest} />
+  ) : open ? (
+    <Link to={to} onClick={onClick} {...rest} />
+  ) : (
+    <div {...rest} />
+  );
 
 /**
  * The work as an index: one big name per row. On hover the other rows dim
@@ -125,6 +154,8 @@ const ProjectsGallery = () => {
               <li key={p._id} className="-mx-3 px-3 border-b border-foreground/15">
                 <Row
                   to={`/work/${p.slug}`}
+                  open={caseOpen(p.slug)}
+                  external={p.openLive && p.liveUrl ? p.liveUrl : undefined}
                   onMouseEnter={() => setHover(i)}
                   onClick={(e: MouseEvent<HTMLAnchorElement>) => open(e, p.slug, i)}
                   className={`group grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[4rem_minmax(0,1fr)_auto] items-baseline gap-x-4 py-6 md:py-8 transition-colors duration-300 ${

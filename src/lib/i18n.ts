@@ -42,10 +42,11 @@ export const localizeProject = (p: SanityProject, lang: Lang): SanityProject => 
     role: e.roleEs || p.role,
     team: e.teamEs || p.team,
     sections: (p.sections ?? []).map((s) => {
-      const se = s as typeof s & { labelEs?: string; bodyEs?: string };
+      const se = s as typeof s & { labelEs?: string; bodyEs?: string; headlineEs?: string };
       return {
         ...s,
         label: se.labelEs || s.label,
+        headline: se.headlineEs || s.headline,
         body: se.bodyEs || s.body,
         stats: s.stats?.map((st) => ({ ...st, label: (st as typeof st & { labelEs?: string }).labelEs || st.label })),
         images: s.images?.map((im) => {

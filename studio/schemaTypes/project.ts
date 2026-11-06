@@ -106,6 +106,13 @@ export const project = defineType({
       type: 'url',
     }),
     defineField({
+      name: 'openLive',
+      title: 'Abrir la web en vez del caso',
+      description: 'On: al hacer clic en el índice se abre la Live URL en una pestaña nueva, en lugar de la página del proyecto.',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
       name: 'timeline',
       title: 'Timeline',
       type: 'string',

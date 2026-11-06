@@ -16,6 +16,8 @@ const ICONS = [
 
 // The scroll cue: the same arrow pointing down, over and over
 const DOWN = [0, 1].map((k) => <path key={k} d="M8 2.5v11M3.5 9 8 13.5 12.5 9" />);
+// The case cursor: the same arrow pointing right
+const RIGHT = [0, 1].map((k) => <path key={k} d="M2.5 8h11M9 3.5 13.5 8 9 12.5" />);
 
 const EVERY_MS = 1600;
 
@@ -24,11 +26,13 @@ const EVERY_MS = 1600;
  * for the next small drawing (spark, smile, asterisk, pencil) and back round.
  * With reduced motion it's just the arrow.
  */
-const CycleIcon = ({ down = false }: { down?: boolean }) => {
-  const icons = down ? DOWN : ICONS;
-  // Down: the arrow drops out of the bottom and the next comes in from the top
-  const out = down ? "110%" : "-110%";
-  const wait = down ? "-110%" : "110%";
+const CycleIcon = ({ down = false, right = false, stroke = 1.5 }: { down?: boolean; right?: boolean; stroke?: number }) => {
+  const icons = right ? RIGHT : down ? DOWN : ICONS;
+  // Down: the arrow drops out of the bottom and the next comes in from the
+  // top; right: it leaves on the right and the next comes in from the left
+  const out = down || right ? "110%" : "-110%";
+  const wait = down || right ? "-110%" : "110%";
+  const axis = right ? "X" : "Y";
   const [i, setI] = useState(0);
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -47,12 +51,12 @@ const CycleIcon = ({ down = false }: { down?: boolean }) => {
             viewBox="0 0 16 16"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.5"
+            strokeWidth={stroke}
             strokeLinecap="round"
             strokeLinejoin="round"
             className="absolute inset-0 size-4"
             style={{
-              transform: `translateY(${pos})`,
+              transform: `translate${axis}(${pos})`,
               opacity: k === i ? 1 : 0,
               // Only the two moving get a transition, so the rest jump below unseen
               transition: pos === wait ? "none" : "transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease",

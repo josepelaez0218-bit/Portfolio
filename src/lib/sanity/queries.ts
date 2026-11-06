@@ -17,6 +17,7 @@ const PROJECT_FIELDS = /* groq */ `
   heroBleed,
   "heroVideoUrl": heroVideo.asset->url,
   liveUrl,
+  openLive,
   timeline,
   timelineEs,
   role,
@@ -26,6 +27,8 @@ const PROJECT_FIELDS = /* groq */ `
   sections[]{
     label,
     labelEs,
+    headline,
+    headlineEs,
     body,
     bodyEs,
     stats,

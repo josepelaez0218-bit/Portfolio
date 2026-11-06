@@ -18,6 +18,17 @@ export const sectionBlock = defineType({
       type: 'string',
     }),
     defineField({
+      name: 'headline',
+      title: 'Headline (optional)',
+      description: 'Una frase que resume la sección, en grande bajo la etiqueta. Con titular, el texto de debajo sale más pequeño y gris.',
+      type: 'string',
+    }),
+    defineField({
+      name: 'headlineEs',
+      title: 'Headline (ES)',
+      type: 'string',
+    }),
+    defineField({
       name: 'body',
       title: 'Body',
       type: 'text',
