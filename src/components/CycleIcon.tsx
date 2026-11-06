@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CHESS_PATHS } from "./chessIcons";
 
 // Drawn on a 16px grid in the button's text colour, 1.5px lines
 const ICONS = [
@@ -19,6 +20,9 @@ const DOWN = [0, 1].map((k) => <path key={k} d="M8 2.5v11M3.5 9 8 13.5 12.5 9" /
 // The case cursor: the same arrow pointing right
 const RIGHT = [0, 1].map((k) => <path key={k} d="M2.5 8h11M9 3.5 13.5 8 9 12.5" />);
 
+// A filled set (Material Symbols, 960 grid): chess pieces, for Táctica
+const CHESS = CHESS_PATHS.map((d, k) => <path key={k} d={d} />);
+
 const EVERY_MS = 1600;
 
 /**
@@ -26,8 +30,8 @@ const EVERY_MS = 1600;
  * for the next small drawing (spark, smile, asterisk, pencil) and back round.
  * With reduced motion it's just the arrow.
  */
-const CycleIcon = ({ down = false, right = false, stroke = 1.5 }: { down?: boolean; right?: boolean; stroke?: number }) => {
-  const icons = right ? RIGHT : down ? DOWN : ICONS;
+const CycleIcon = ({ down = false, right = false, stroke = 1.5, chess = false }: { down?: boolean; right?: boolean; stroke?: number; chess?: boolean }) => {
+  const icons = chess ? CHESS : right ? RIGHT : down ? DOWN : ICONS;
   // Down: the arrow drops out of the bottom and the next comes in from the
   // top; right: it leaves on the right and the next comes in from the left
   const out = down || right ? "110%" : "-110%";
@@ -48,9 +52,9 @@ const CycleIcon = ({ down = false, right = false, stroke = 1.5 }: { down?: boole
         return (
           <svg
             key={k}
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
+            viewBox={chess ? "0 -960 960 960" : "0 0 16 16"}
+            fill={chess ? "currentColor" : "none"}
+            stroke={chess ? "none" : "currentColor"}
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeLinejoin="round"

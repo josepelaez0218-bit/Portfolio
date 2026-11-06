@@ -82,6 +82,13 @@ export const sectionBlock = defineType({
       ],
     }),
     defineField({
+      name: 'video2',
+      title: 'Second video (optional)',
+      description: 'Otro vídeo más, después del primero (p. ej. una animación de logo junto a una captura).',
+      type: 'file',
+      options: {accept: 'video/*'},
+    }),
+    defineField({
       name: 'stats',
       title: 'Highlighted stats (optional)',
       description: 'Big numbers shown as cards at a glance, e.g. "634" / "Users" or "54.79%" / "Engagement rate".',

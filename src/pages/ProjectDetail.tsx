@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Footer from "@/components/Footer";
 import CaseNav from "@/components/CaseNav";
+import CycleIcon from "@/components/CycleIcon";
 import { caseOpen } from "@/components/ProjectsGallery";
 import { CaseSection } from "@/components/CaseSection";
 import { fetchProjectBySlug, fetchProjects } from "@/lib/sanity/queries";
@@ -10,6 +11,18 @@ import { urlForImage } from "@/lib/sanity/image";
 import type { SanityProject } from "@/lib/sanity/types";
 import NotFound from "./NotFound";
 import { localizeProject, useLang, useT } from "@/lib/i18n";
+
+// The live-site CTA, as the home's "Start a project": black pill, cycling icon
+const LiveCta = ({ href, label, className = "", chess = false }: { href: string; label: string; className?: string; chess?: boolean }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-transform duration-300 hover:scale-[1.04] ${className}`}
+  >
+    {label} <CycleIcon chess={chess} />
+  </a>
+);
 
 const slugifyLabel = (label: string) =>
   label
@@ -131,13 +144,9 @@ const ProjectDetail = () => {
             {number !== null ? String(number + 1).padStart(2, "0") : ""}
           </span>
           <h1 className="font-display font-normal leading-[1.15] tracking-[-0.02em] text-[clamp(1.5rem,4.2vw,4.75rem)] whitespace-nowrap overflow-hidden text-ellipsis">{project.title}</h1>
-          <span className="hidden md:flex items-baseline gap-6 text-[14px] text-foreground/60">
+          <span className="hidden md:flex items-center gap-6 text-[14px] text-foreground/60">
             {(project.tags ?? []).join(" · ")}
-            {project.liveUrl && (
-              <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-4 decoration-foreground/30 hover:decoration-foreground transition-colors">
-                {t("visitLive")} ↗
-              </a>
-            )}
+            {project.liveUrl && <LiveCta chess={project.slug === "tactica"} href={project.liveUrl} label={t("visitLive")} />}
           </span>
         </div>
       </header>
@@ -154,9 +163,10 @@ const ProjectDetail = () => {
       {/* What it is, in one breath, right after the cover: the project's
           description in the home's lead voice (as the hero card) */}
       <div className="bg-background px-3 py-16 md:py-24 grid grid-cols-1 lg:grid-cols-12 lg:gap-x-10">
-        <p className="text-lead text-foreground lg:col-start-2 lg:col-span-7 max-w-[38ch] text-balance reveal" data-reveal>
-          {project.description}
-        </p>
+        <div className="lg:col-start-2 lg:col-span-7 flex flex-col items-start gap-8 reveal" data-reveal>
+          <p className="text-lead text-foreground max-w-[38ch] text-balance">{project.description}</p>
+          {project.liveUrl && <LiveCta chess={project.slug === "tactica"} href={project.liveUrl} label={t("visitLive")} className="md:hidden" />}
+        </div>
       </div>
 
       {/* The sections, one reading axis (see CaseSection) */}
@@ -171,6 +181,14 @@ const ProjectDetail = () => {
             <CaseSection s={s} i={sIdx} />
           </section>
         ))}
+        {project.liveUrl && (
+          <div className="-mx-3 px-3 py-16 md:py-24 border-t border-foreground/15 grid grid-cols-1 lg:grid-cols-12 lg:gap-x-10">
+            <div className="lg:col-start-2 lg:col-span-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <p className="text-lead text-foreground">{lang === "es" ? "Pruébalo tú mismo." : "Try it yourself."}</p>
+              <LiveCta chess={project.slug === "tactica"} href={project.liveUrl} label={t("visitLive")} />
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Next project: one row of the grid — the label where the index is,

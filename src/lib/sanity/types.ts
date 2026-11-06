@@ -16,6 +16,7 @@ export interface SanitySectionBlock {
   mediaOrder?: "images-first" | "video-first";
   videoUrl?: string;
   videoCaption?: string;
+  video2Url?: string;
 }
 
 export interface SanityHome {

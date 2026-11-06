@@ -5,9 +5,11 @@ import type { SanitySectionBlock } from "@/lib/sanity/types";
 type Media = { kind: "img"; im: NonNullable<SanitySectionBlock["images"]>[number] } | { kind: "video"; src: string; caption?: string };
 const mediaOf = (s: SanitySectionBlock): Media[] => {
   const imgs: Media[] = (s.images ?? []).map((im) => ({ kind: "img", im }));
-  if (!s.videoUrl) return imgs;
-  const v: Media = { kind: "video", src: s.videoUrl, caption: s.videoCaption };
-  return s.mediaOrder === "video-first" ? [v, ...imgs] : [...imgs, v];
+  const vids: Media[] = [
+    ...(s.videoUrl ? [{ kind: "video" as const, src: s.videoUrl, caption: s.videoCaption }] : []),
+    ...(s.video2Url ? [{ kind: "video" as const, src: s.video2Url }] : []),
+  ];
+  return s.mediaOrder === "video-first" ? [...vids, ...imgs] : [...imgs, ...vids];
 };
 
 
@@ -50,7 +52,8 @@ const Stats = ({ s, className = "" }: { s: SanitySectionBlock; className?: strin
  * pictures, as their caption: number and name (cols 2–4), the text (cols 5–9,
  * ~65 characters a line, 16px, secondary grey).
  */
-export const CaseSection = ({ s, i }: { s: SanitySectionBlock; i: number }) => {
+// bare: no hairline (pieces already sit on their own plates)
+export const CaseSection = ({ s, i, bare = false }: { s: SanitySectionBlock; i: number; bare?: boolean }) => {
   const media = mediaOf(s);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-x-10">
@@ -64,7 +67,7 @@ export const CaseSection = ({ s, i }: { s: SanitySectionBlock; i: number }) => {
               const alone = media.length % 2 === 1 && k === media.length - 1;
               return (
                 <div key={k} className={alone ? "md:col-span-2" : ""}>
-                  <Framed m={m} ratio={alone ? 16 / 9 : 4 / 3} w={alone ? 2200 : 1200} />
+                  <Framed m={m} ratio={alone ? 16 / 9 : 4 / 3} w={alone ? 2200 : 1200} bare={bare} />
                 </div>
               );
             })}
@@ -86,11 +89,11 @@ export const CaseSection = ({ s, i }: { s: SanitySectionBlock; i: number }) => {
 };
 
 /** A picture or clip cropped to a fixed shape (the Sanity hotspot decides what stays). */
-const Framed = ({ m, ratio, w }: { m: Media; ratio: number; w: number }) => (
+const Framed = ({ m, ratio, w, bare = false }: { m: Media; ratio: number; w: number; bare?: boolean }) => (
   // A 1px hairline drawn over the picture (inside, so sizes don't change):
   // white pieces keep their edge on the white page; on dark ones it's invisible
   <div
-    className="relative overflow-hidden rounded-[4px] bg-[#f5f5f5] after:pointer-events-none after:absolute after:inset-0 after:rounded-[4px] after:border after:border-foreground/10"
+    className={`relative overflow-hidden rounded-[4px] bg-[#f5f5f5] ${bare ? "" : "after:pointer-events-none after:absolute after:inset-0 after:rounded-[4px] after:border after:border-foreground/10"}`}
     style={{ aspectRatio: String(ratio) }}
   >
     {m.kind === "video" ? (

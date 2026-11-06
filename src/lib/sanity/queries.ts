@@ -36,7 +36,8 @@ const PROJECT_FIELDS = /* groq */ `
     mediaOrder,
     "images": images[]{..., alt},
     "videoUrl": video.asset->url,
-    "videoCaption": video.caption
+    "videoCaption": video.caption,
+    "video2Url": video2.asset->url
   }
 `;
 
