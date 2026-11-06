@@ -6,5 +6,7 @@ export const sanityClient = createClient({
   projectId: "2u19gait",
   dataset: "production",
   apiVersion: "2025-01-01",
-  useCdn: true,
+  // Straight from the live API, not Sanity's CDN: the CDN can keep serving an
+  // old copy for a while after a Publish, and Jose edits the texts here
+  useCdn: false,
 });
