@@ -29,6 +29,13 @@ export const project = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'descriptionEs',
+      title: 'Description (ES)',
+      description: 'La misma descripción en español. Vacía: se usa la inglesa.',
+      type: 'text',
+      rows: 2,
+    }),
+    defineField({
       name: 'category',
       title: 'Category',
       type: 'string',
@@ -39,6 +46,13 @@ export const project = defineType({
       name: 'tags',
       title: 'Tags',
       description: 'Shown next to the title in the grid, e.g. "Web · Data-driven".',
+      type: 'array',
+      of: [{type: 'string'}],
+    }),
+    defineField({
+      name: 'tagsEs',
+      title: 'Tags (ES)',
+      description: 'Las mismas etiquetas en español, en el mismo orden.',
       type: 'array',
       of: [{type: 'string'}],
     }),
@@ -97,13 +111,28 @@ export const project = defineType({
       type: 'string',
     }),
     defineField({
+      name: 'timelineEs',
+      title: 'Timeline (ES)',
+      type: 'string',
+    }),
+    defineField({
       name: 'role',
       title: 'Role',
       type: 'string',
     }),
     defineField({
+      name: 'roleEs',
+      title: 'Role (ES)',
+      type: 'string',
+    }),
+    defineField({
       name: 'team',
       title: 'Team',
+      type: 'string',
+    }),
+    defineField({
+      name: 'teamEs',
+      title: 'Team (ES)',
       type: 'string',
     }),
     defineField({

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useT } from "@/lib/i18n";
+import { contactEmail } from "@/lib/siteTexts";
 
-const EMAIL = "josepelaez0218@gmail.com";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Brief = { name: string; email: string; message: string };
@@ -9,7 +9,7 @@ type Brief = { name: string; email: string; message: string };
 /** For now “Send” opens the visitor's email with the brief written in (nothing is stored or sent from here). */
 const sendBrief = ({ name, email, message }: Brief, subject = "New project") => {
   const body = `${message.trim()}\n\n${name.trim()} · ${email.trim()}`;
-  window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(`${subject} — ${name.trim()}`)}&body=${encodeURIComponent(body)}`;
+  window.location.href = `mailto:${contactEmail()}?subject=${encodeURIComponent(`${subject} — ${name.trim()}`)}&body=${encodeURIComponent(body)}`;
 };
 const problem = (b: Brief) =>
   !b.name.trim() || !EMAIL_RE.test(b.email.trim()) || !b.message.trim() ? "formError" : null;

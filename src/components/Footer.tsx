@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useT } from "@/lib/i18n";
+import { contactEmail } from "@/lib/siteTexts";
 
-const EMAIL = "josepelaez0218@gmail.com";
 
 const madridTime = () =>
   new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit" }).format(new Date());
@@ -35,8 +35,8 @@ const Footer = () => {
           </div>
           <div className="md:col-span-2 flex flex-col gap-3">
             <p className={HEAD}>{t("contact")}</p>
-            <a href={`mailto:${EMAIL}`} className={`${LINK} break-all`}>
-              {EMAIL}
+            <a href={`mailto:${contactEmail()}`} className={`${LINK} break-all`}>
+              {contactEmail()}
             </a>
             <Link to="/#start" onClick={() => window.dispatchEvent(new Event("open-brief"))} className={LINK}>
               {t("startProject")}

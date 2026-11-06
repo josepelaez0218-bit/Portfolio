@@ -13,11 +13,23 @@ export const sectionBlock = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'labelEs',
+      title: 'Label (ES)',
+      type: 'string',
+    }),
+    defineField({
       name: 'body',
       title: 'Body',
       type: 'text',
       rows: 6,
       validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'bodyEs',
+      title: 'Body (ES)',
+      description: 'El mismo texto en español. Vacío: se usa el inglés.',
+      type: 'text',
+      rows: 6,
     }),
     defineField({
       name: 'images',
@@ -34,6 +46,11 @@ export const sectionBlock = defineType({
               title: 'Alt text',
               type: 'string',
               validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'altEs',
+              title: 'Alt text (ES)',
+              type: 'string',
             }),
           ],
         },
@@ -76,6 +93,11 @@ export const sectionBlock = defineType({
               description: 'What it means, e.g. "Users", "Engagement rate".',
               type: 'string',
               validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'labelEs',
+              title: 'Label (ES)',
+              type: 'string',
             }),
           ],
           preview: {

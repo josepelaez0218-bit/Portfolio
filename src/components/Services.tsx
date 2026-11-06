@@ -1,29 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { useLang } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
+import { services as getServices } from "@/lib/siteTexts";
 
-// Taken from Jose's CV: nothing here is rounded up or made up
-const COPY = {
-  en: {
-    title: "Product, brand & web.",
-    lead: "Product designer working across systems, AI and brand — bridging product and marketing to build digital experiences that scale, and seeing them through to launch.",
-    services: [
-      { name: "Product design", line: "UX/UI for internal tools and AI-driven products, from user flows and research to the final interface." },
-      { name: "Design systems", line: "Components, patterns and tone shared across products, so teams build faster and stay consistent." },
-      { name: "Brand identity", line: "Naming, logo and visual identity, with an editorial eye from a background in photography." },
-      { name: "Web", line: "Websites and landing pages designed and built end to end, ready to grow with the business." },
-    ],
-  },
-  es: {
-    title: "Producto, marca y web.",
-    lead: "Diseñador de producto entre sistemas, IA y marca. Conecto producto y marketing para crear experiencias digitales que escalan, y las acompaño hasta el lanzamiento.",
-    services: [
-      { name: "Diseño de producto", line: "UX/UI para herramientas internas y productos con IA, desde los flujos y la investigación hasta la interfaz final." },
-      { name: "Sistemas de diseño", line: "Componentes, patrones y tono compartidos entre productos, para que los equipos construyan más rápido y con coherencia." },
-      { name: "Identidad de marca", line: "Naming, logotipo e identidad visual, con una mirada editorial que viene de la fotografía." },
-      { name: "Web", line: "Webs y landings diseñadas y desarrolladas de principio a fin, listas para crecer con el negocio." },
-    ],
-  },
-} as const;
 
 // The section's own colours (HSL, like the site's tokens), so every
 // text-foreground/… inside takes them: a black sheet between the white ones
@@ -34,17 +12,9 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
 // How the pictures open out before settling: "row" (side by side) or "fan"
 const OPEN: "row" | "fan" = "row";
 
-// The picture under each service, in order, with its own proportion
-// (width / height) so nothing is cropped. Transparent PNG exports as WebP.
-const PICTURES = [
-  { src: "/images/services/product-design.webp", ratio: 706 / 682, alt: "Julita wine shop on two phones: a product page and the menu" },
-  { src: "/images/services/design-systems.webp", ratio: 718 / 524, alt: "Belén de las Nieves online shop on a laptop" },
-  { src: "/images/services/brand-identity.webp", ratio: 704 / 524, alt: "The Kooks concert poster, framed against a wall" },
-  { src: "/images/services/web.webp", ratio: 700 / 429, alt: "Global Innovation Summit 2026 landing page" },
-];
 
-const Picture = ({ i }: { i: number }) => (
-  <img src={PICTURES[i].src} alt={PICTURES[i].alt} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+const Picture = ({ pic }: { pic: { src: string; alt: string } }) => (
+  <img src={pic.src} alt={pic.alt} loading="lazy" decoding="async" className="w-full h-full object-cover" />
 );
 
 type Rect = { x: number; y: number; w: number; h: number };
@@ -61,7 +31,11 @@ const span = (p: number, a: number, b: number) => Math.min(1, Math.max(0, (p - a
  */
 const Services = () => {
   const lang = useLang();
-  const c = COPY[lang];
+  const t = useT(); // also re-renders when the Sanity texts arrive
+  // Texts and pictures from Sanity ("Textos de la web" → Servicios)
+  const list = getServices(lang);
+  const PICTURES = list;
+  const ratios = list.map((s) => s.ratio).join(",");
 
   // Wide screens: the services hold still while the scroll plays the pictures —
   // one rises from the bottom, the others fan out from behind it, then each
@@ -119,7 +93,7 @@ const Services = () => {
         if (!el || !li) return;
         const ratio = PICTURES[i].ratio;
         // Each picture runs a little behind the one before it
-        const order = [2, 0, 1, 3][i];
+        const order = [2, 0, 1, 3][i] ?? i;
         const q = Math.min(1, Math.max(0, (pp - order * 0.035) / (1 - 0.105)));
         // At the end: under its column, at its own proportion, all their tops
         // on one line below the longest text
@@ -131,7 +105,7 @@ const Services = () => {
         const bottom = vh - box.top;
         const hidden: Rect = { x: vw / 2 - base / 2, y: bottom + 40, w: base, h: pileH };
         const risen: Rect = { ...hidden, y: bottom - pileH * 0.85 };
-        const off = [-1.5, -0.5, 0.5, 1.5][i];
+        const off = [-1.5, -0.5, 0.5, 1.5][i] ?? i - 1.5;
         // Opening out: a straight row, side by side at the same height (or,
         // with OPEN = "fan", held like a hand of cards, the middle two in front)
         const k = OPEN === "fan" && Math.abs(off) > 1 ? 0.8 : 1;
@@ -177,7 +151,8 @@ const Services = () => {
       window.removeEventListener("resize", kick);
       cancelAnimationFrame(raf);
     };
-  }, [wide]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wide, ratios]);
 
   return (
     <section id="services" className="relative w-full bg-background text-foreground" style={vars}>
@@ -185,10 +160,10 @@ const Services = () => {
       <div className="sticky top-0 z-0 px-3 pt-20 md:pt-28 pb-16 md:pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-10 gap-y-6 items-end">
           <h2 className="lg:col-span-8 font-display font-normal leading-[0.95] tracking-[-0.03em] text-[clamp(3rem,9vw,9rem)] text-balance">
-            {c.title}
+            {t("servicesTitle")}
           </h2>
           <p className="lg:col-span-4 text-[16px] md:text-[18px] leading-[1.5] text-foreground/80 max-w-[44ch] lg:justify-self-end lg:text-right">
-            {c.lead}
+            {t("servicesLead")}
           </p>
         </div>
       </div>
@@ -199,7 +174,7 @@ const Services = () => {
       <div ref={wrap} className="relative z-10 bg-background border-t border-foreground/20" style={wide ? { height: "300svh" } : undefined}>
         <div ref={stage} className={wide ? "sticky top-0 h-[100svh] overflow-hidden" : "min-h-[100svh]"}>
           <ol className="px-3 pt-8 md:pt-10 pb-20 md:pb-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
-            {c.services.map((s, i) => (
+            {list.map((s, i) => (
               <li key={s.name} className={`flex flex-col gap-3 self-start ${wide ? "" : ["", "md:mt-16", "", "md:mt-16"][i]}`}>
                 <div ref={(el) => (items.current[i] = el as HTMLLIElement | null)} className="flex flex-col gap-3">
                   <span className="text-[14px] text-foreground/60 tabular-nums tracking-[0.01em]">{pad(i)}</span>
@@ -209,7 +184,7 @@ const Services = () => {
                 {/* Phones and tablets: the picture simply sits under its text */}
                 {!wide && (
                   <div className="mt-3 overflow-hidden rounded-[4px]" style={{ aspectRatio: String(PICTURES[i].ratio) }}>
-                    <Picture i={i} />
+                    <Picture pic={PICTURES[i]} />
                   </div>
                 )}
               </li>
@@ -221,9 +196,9 @@ const Services = () => {
                 key={pic.src}
                 ref={(el) => (cards.current[i] = el)}
                 className="absolute left-0 top-0 origin-bottom overflow-hidden rounded-[4px] will-change-transform"
-                style={{ zIndex: [1, 3, 2, 0][i], transform: "translate3d(0,100vh,0)" }}
+                style={{ zIndex: [1, 3, 2, 0][i] ?? 0, transform: "translate3d(0,100vh,0)" }}
               >
-                <Picture i={i} />
+                <Picture pic={PICTURES[i]} />
               </div>
             ))}
         </div>

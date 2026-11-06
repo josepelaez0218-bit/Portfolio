@@ -11,14 +11,15 @@ import ProjectsGallery from "@/components/ProjectsGallery";
 import Services from "@/components/Services";
 import StackSheet from "@/components/StackSheet";
 import { fetchHome } from "@/lib/sanity/queries";
-import { useLang } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
+import { ogImage } from "@/lib/siteTexts";
 
 // Shown if Sanity has no Home document yet or the request fails.
 const FALLBACK_HERO_TITLE = "Brand & website\nstudio.";
 
 const Index = () => {
   const location = useLocation();
-  const lang = useLang();
+  const t = useT();
   // null while loading — the headline mounts (and runs its fade-up) once
   // the text is known, so the fallback never flashes before the real copy.
   const [heroTitle, setHeroTitle] = useState<string | null>(null);
@@ -66,20 +67,14 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Jose Peláez — Product & Brand Design</title>
-        <meta
-          name="description"
-          content="Jose Peláez — product and brand designer based in Madrid. Brand identities, websites and digital products, designed and built end to end."
-        />
+        <title>{t("seoTitle")}</title>
+        <meta name="description" content={t("seoDescription")} />
         <link rel="canonical" href="https://www.josepelaez.es/" />
-        <meta property="og:title" content="Jose Peláez — Product & Brand Design" />
-        <meta
-          property="og:description"
-          content="Jose Peláez — product and brand designer based in Madrid. Brand identities, websites and digital products, designed and built end to end."
-        />
+        <meta property="og:title" content={t("seoTitle")} />
+        <meta property="og:description" content={t("seoDescription")} />
         <meta property="og:url" content="https://www.josepelaez.es/" />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://www.josepelaez.es/og-image.png" />
+        <meta property="og:image" content={ogImage() ?? "https://www.josepelaez.es/og-image.png"} />
       </Helmet>
 
       {/* Three parts stacked like sheets: the hero stays put and the intro and
@@ -121,7 +116,7 @@ const Index = () => {
           className="pointer-events-none absolute z-10 bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 whitespace-nowrap text-[14px] tracking-[0.01em] text-foreground/60 animate-fade-up"
           style={{ animationDelay: "1.4s", animationFillMode: "backwards" }}
         >
-          {lang === "es" ? "Desliza para descubrir" : "Scroll to discover"} <CycleIcon down />
+          {t("scrollHint")} <CycleIcon down />
         </p>
       </section>
 
