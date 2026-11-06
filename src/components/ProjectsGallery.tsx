@@ -25,10 +25,10 @@ export const SHAPES: Record<string, number> = {
   isola: 4 / 5,
 };
 
-// Same area for every shape: that of a 3:2 box 40vw (at most 760px) wide
+// Same area for every shape: that of a 3:2 box 32vw (at most 600px) wide
 const previewSize = (ratio: number) => {
   const k = Math.sqrt(ratio / 1.5);
-  return { width: `min(${(40 * k).toFixed(2)}vw, ${Math.round(760 * k)}px)`, height: `min(${((40 * k) / ratio).toFixed(2)}vw, ${Math.round((760 * k) / ratio)}px)` };
+  return { width: `min(${(32 * k).toFixed(2)}vw, ${Math.round(600 * k)}px)`, height: `min(${((32 * k) / ratio).toFixed(2)}vw, ${Math.round((600 * k) / ratio)}px)` };
 };
 
 /** Cover image or looping video, cropped to its box. */

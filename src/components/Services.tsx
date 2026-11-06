@@ -96,6 +96,10 @@ const Services = () => {
       // Text first: the pictures wait until the block has slid all the way up
       // over the title, so nothing lands on the texts while they come in
       const p = Math.min(1, Math.max(0, -r.top / (r.height - vh)));
+      // The pictures start earlier, while the block is still sliding up over
+      // the title, so there's never a screen with only the four texts
+      const lead = vh * 0.5;
+      const pp = Math.min(1, Math.max(0, (lead - r.top) / (r.height - vh + lead)));
       const base = Math.min(vw * 0.24, 380);
       const pileH = base / 1.25;
       let moving = false;
@@ -116,7 +120,7 @@ const Services = () => {
         const ratio = PICTURES[i].ratio;
         // Each picture runs a little behind the one before it
         const order = [2, 0, 1, 3][i];
-        const q = Math.min(1, Math.max(0, (p - order * 0.035) / (1 - 0.105)));
+        const q = Math.min(1, Math.max(0, (pp - order * 0.035) / (1 - 0.105)));
         // At the end: under its column, at its own proportion, all their tops
         // on one line below the longest text
         const col = li.getBoundingClientRect();

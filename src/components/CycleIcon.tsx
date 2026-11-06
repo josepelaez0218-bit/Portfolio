@@ -14,6 +14,9 @@ const ICONS = [
   <path key="pencil" d="M10.5 2.5 13.5 5.5 5.5 13.5H2.5V10.5ZM9 4l3 3" />,
 ];
 
+// The scroll cue: the same arrow pointing down, over and over
+const DOWN = [0, 1].map((k) => <path key={k} d="M8 2.5v11M3.5 9 8 13.5 12.5 9" />);
+
 const EVERY_MS = 1600;
 
 /**
@@ -21,19 +24,23 @@ const EVERY_MS = 1600;
  * for the next small drawing (spark, smile, asterisk, pencil) and back round.
  * With reduced motion it's just the arrow.
  */
-const CycleIcon = () => {
+const CycleIcon = ({ down = false }: { down?: boolean }) => {
+  const icons = down ? DOWN : ICONS;
+  // Down: the arrow drops out of the bottom and the next comes in from the top
+  const out = down ? "110%" : "-110%";
+  const wait = down ? "-110%" : "110%";
   const [i, setI] = useState(0);
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setInterval(() => setI((n) => (n + 1) % ICONS.length), EVERY_MS);
+    const id = window.setInterval(() => setI((n) => (n + 1) % icons.length), EVERY_MS);
     return () => window.clearInterval(id);
-  }, []);
+  }, [icons.length]);
 
   return (
     <span aria-hidden="true" className="relative inline-block size-4 overflow-hidden align-[-0.15em]">
-      {ICONS.map((icon, k) => {
+      {icons.map((icon, k) => {
         // The one showing sits in place; the one before has gone up, the rest wait below
-        const pos = k === i ? "0%" : k === (i - 1 + ICONS.length) % ICONS.length ? "-110%" : "110%";
+        const pos = k === i ? "0%" : k === (i - 1 + icons.length) % icons.length ? out : wait;
         return (
           <svg
             key={k}
@@ -48,7 +55,7 @@ const CycleIcon = () => {
               transform: `translateY(${pos})`,
               opacity: k === i ? 1 : 0,
               // Only the two moving get a transition, so the rest jump below unseen
-              transition: pos === "110%" ? "none" : "transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease",
+              transition: pos === wait ? "none" : "transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease",
             }}
           >
             {icon}

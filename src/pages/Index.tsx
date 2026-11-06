@@ -5,17 +5,20 @@ import ClosingHello from "@/components/ClosingHello";
 import Footer from "@/components/Footer";
 import ClothHero from "@/components/ClothHero";
 import HeroCard from "@/components/HeroCard";
+import CycleIcon from "@/components/CycleIcon";
 import ImageTrailHero from "@/components/ImageTrailHero";
 import ProjectsGallery from "@/components/ProjectsGallery";
 import Services from "@/components/Services";
 import StackSheet from "@/components/StackSheet";
 import { fetchHome } from "@/lib/sanity/queries";
+import { useLang } from "@/lib/i18n";
 
 // Shown if Sanity has no Home document yet or the request fails.
 const FALLBACK_HERO_TITLE = "Brand & website\nstudio.";
 
 const Index = () => {
   const location = useLocation();
+  const lang = useLang();
   // null while loading — the headline mounts (and runs its fade-up) once
   // the text is known, so the fallback never flashes before the real copy.
   const [heroTitle, setHeroTitle] = useState<string | null>(null);
@@ -112,6 +115,14 @@ const Index = () => {
 
         {hero === "cloth" ? <ClothHero onUnsupported={() => setHero("trail")} /> : <ImageTrailHero />}
         <HeroCard />
+        {/* A quiet nudge to keep going */}
+        <p
+          aria-hidden="true"
+          className="pointer-events-none absolute z-10 bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 whitespace-nowrap text-[14px] tracking-[0.01em] text-foreground/60 animate-fade-up"
+          style={{ animationDelay: "1.4s", animationFillMode: "backwards" }}
+        >
+          {lang === "es" ? "Desliza para descubrir" : "Scroll to discover"} <CycleIcon down />
+        </p>
       </section>
 
       <StackSheet className="z-10">
