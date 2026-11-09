@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useLang, useT } from "@/lib/i18n";
 import { services as getServices } from "@/lib/siteTexts";
-
+import { Img, LEAD_NAMES, PIECES, type Pic } from "@/components/services-gallery/pieces";
+import Carousel3D from "@/components/services-gallery/Carousel3D";
 
 // The section's own colours (HSL, like the site's tokens), so every
 // text-foreground/… inside takes them: a black sheet between the white ones
@@ -9,37 +10,20 @@ const vars = { ["--background" as string]: "0 0% 4%", ["--foreground" as string]
 
 const pad = (i: number) => String(i + 1).padStart(2, "0");
 
-// How the pictures open out before settling: "row" (side by side) or "fan"
-const OPEN: "row" | "fan" = "row";
-
-
-const Picture = ({ pic }: { pic: { src: string; alt: string } }) => (
-  <img src={pic.src} alt={pic.alt} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-);
-
-type Rect = { x: number; y: number; w: number; h: number };
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const mix = (a: Rect, b: Rect, t: number): Rect => ({ x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), w: lerp(a.w, b.w, t), h: lerp(a.h, b.h, t) });
-// Sine in-out: gentle at both ends
-const ease = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
-const span = (p: number, a: number, b: number) => Math.min(1, Math.max(0, (p - a) / (b - a)));
-
 /**
- * What Jose does and the experience behind it, between the work and the
- * contact, on a black sheet: a big title, then the four services in a
- * staggered row, each with a picture of a project that shows it.
+ * What Jose does and the work behind it, between the projects and the
+ * contact, on a black sheet: a big title, the four services, then the work
+ * as a card file that never stops turning (on phones, a row to swipe).
  */
 const Services = () => {
   const lang = useLang();
   const t = useT(); // also re-renders when the Sanity texts arrive
   // Texts and pictures from Sanity ("Textos de la web" → Servicios)
-  const list = getServices(lang);
-  const PICTURES = list;
-  const ratios = list.map((s) => s.ratio).join(",");
+  const fromSanity = getServices(lang);
+  const list = fromSanity;
+  const leads: Pic[] = list.map((s, i) => ({ src: s.src, alt: s.alt, ratio: s.ratio, name: LEAD_NAMES[i] ?? s.name }));
+  const pieces: Pic[] = [...leads, ...PIECES.map((p) => ({ src: p.src, ratio: p.ratio, name: p.name, alt: p.alt[lang] }))];
 
-  // Wide screens: the services hold still while the scroll plays the pictures —
-  // one rises from the bottom, the others fan out from behind it, then each
-  // settles under its own column
   const [wide, setWide] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
@@ -47,112 +31,6 @@ const Services = () => {
     mq.addEventListener("change", on);
     return () => mq.removeEventListener("change", on);
   }, []);
-  const wrap = useRef<HTMLDivElement>(null);
-  const stage = useRef<HTMLDivElement>(null);
-  const items = useRef<(HTMLLIElement | null)[]>([]);
-  const cards = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    if (!wide) return;
-    // Where each picture is now; every frame it eases towards where the
-    // scroll wants it, so it moves with some weight instead of being dragged
-    const now: (Rect & { r: number })[] = [];
-    const lift: number[] = [];
-    let raf = 0;
-    let visible = false;
-    const tick = () => {
-      raf = 0;
-      const w = wrap.current, st = stage.current;
-      if (!w || !st) return;
-      const vh = window.innerHeight, vw = st.clientWidth;
-      const box = st.getBoundingClientRect();
-      const r = w.getBoundingClientRect();
-      // Text first: the pictures wait until the block has slid all the way up
-      // over the title, so nothing lands on the texts while they come in
-      const p = Math.min(1, Math.max(0, -r.top / (r.height - vh)));
-      // The pictures start earlier, while the block is still sliding up over
-      // the title, so there's never a screen with only the four texts
-      const lead = vh * 0.5;
-      const pp = Math.min(1, Math.max(0, (lead - r.top) / (r.height - vh + lead)));
-      const base = Math.min(vw * 0.24, 380);
-      const pileH = base / 1.25;
-      let moving = false;
-      // The texts start as a staircase and rise into one line as the
-      // pictures settle, each column a beat after the one before
-      items.current.forEach((el, i) => {
-        if (!el) return;
-        const goal = (48 + i * 64) * (1 - ease(span(p - i * 0.03, 0, 0.85)));
-        lift[i] ??= goal;
-        lift[i] += (goal - lift[i]) * 0.12;
-        if (Math.abs(goal - lift[i]) > 0.3) moving = true;
-        el.style.transform = `translate3d(0,${lift[i]}px,0)`;
-      });
-      const textBottom = Math.max(...items.current.map((el) => el?.getBoundingClientRect().bottom ?? 0));
-      cards.current.forEach((el, i) => {
-        const li = items.current[i];
-        if (!el || !li) return;
-        const ratio = PICTURES[i].ratio;
-        // Each picture runs a little behind the one before it
-        const order = [2, 0, 1, 3][i] ?? i;
-        const q = Math.min(1, Math.max(0, (pp - order * 0.035) / (1 - 0.105)));
-        // At the end: under its column, at its own proportion, all their tops
-        // on one line below the longest text
-        const col = li.getBoundingClientRect();
-        const end: Rect = { x: col.left - box.left, y: textBottom - box.top + 32, w: col.width, h: col.width / ratio };
-        // The pile: all together in the middle, below the bottom edge
-        // (measured from the screen's bottom edge, not the block's, since the
-        // block may still be sliding up)
-        const bottom = vh - box.top;
-        const hidden: Rect = { x: vw / 2 - base / 2, y: bottom + 40, w: base, h: pileH };
-        const risen: Rect = { ...hidden, y: bottom - pileH * 0.85 };
-        const off = [-1.5, -0.5, 0.5, 1.5][i] ?? i - 1.5;
-        // Opening out: a straight row, side by side at the same height (or,
-        // with OPEN = "fan", held like a hand of cards, the middle two in front)
-        const k = OPEN === "fan" && Math.abs(off) > 1 ? 0.8 : 1;
-        const fan: Rect =
-          OPEN === "fan"
-            ? { x: vw / 2 - (base * k) / 2 + off * base * 0.62, y: bottom - pileH * k * 0.95 + Math.abs(off) * 14, w: base * k, h: pileH * k }
-            : { x: vw / 2 - base / 2 + off * (base + 12), y: bottom - pileH * 0.95, w: base, h: pileH };
-        // Overlapping phases with soft curves, so there are no corners
-        const up = ease(span(q, 0, 0.24));
-        const open = ease(span(q, 0.2, 0.55));
-        const settle = ease(span(q, 0.48, 0.92));
-        const target = mix(mix(mix(hidden, risen, up), fan, open), end, settle);
-        const tilt = OPEN === "fan" ? off * 4 * open * (1 - settle) : 0;
-        // Ease towards the target: weight, a touch of drag
-        const c = (now[i] ??= { ...target, r: tilt });
-        const f = 0.12;
-        c.x += (target.x - c.x) * f;
-        c.y += (target.y - c.y) * f;
-        c.w += (target.w - c.w) * f;
-        c.h += (target.h - c.h) * f;
-        c.r += (tilt - c.r) * f;
-        if (Math.abs(target.y - c.y) + Math.abs(target.x - c.x) + Math.abs(target.w - c.w) > 0.3) moving = true;
-        el.style.transform = `translate3d(${c.x}px,${c.y}px,0) rotate(${c.r}deg)`;
-        el.style.width = `${c.w}px`;
-        el.style.height = `${c.h}px`;
-      });
-      // Keep going while something still has to arrive
-      if (visible && moving) raf = requestAnimationFrame(tick);
-    };
-    const kick = () => {
-      if (!raf) raf = requestAnimationFrame(tick);
-    };
-    const io = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      if (visible) kick();
-    });
-    if (wrap.current) io.observe(wrap.current);
-    window.addEventListener("scroll", kick, { passive: true });
-    window.addEventListener("resize", kick);
-    return () => {
-      io.disconnect();
-      window.removeEventListener("scroll", kick);
-      window.removeEventListener("resize", kick);
-      cancelAnimationFrame(raf);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wide, ratios]);
 
   return (
     <section id="services" className="relative w-full bg-background text-foreground" style={vars}>
@@ -168,42 +46,30 @@ const Services = () => {
         </div>
       </div>
 
-      {/* The services, each a little lower than the one before. On wide
-          screens this block is three screens tall and its content holds still
-          while the pictures play; it slides up over the title first. */}
-      <div ref={wrap} className="relative z-10 bg-background border-t border-foreground/20" style={wide ? { height: "300svh" } : undefined}>
-        <div ref={stage} className={wide ? "sticky top-0 h-[100svh] overflow-hidden" : "min-h-[100svh]"}>
-          <ol className="px-3 pt-8 md:pt-10 pb-20 md:pb-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
-            {list.map((s, i) => (
-              <li key={s.name} className={`flex flex-col gap-3 self-start ${wide ? "" : ["", "md:mt-16", "", "md:mt-16"][i]}`}>
-                <div ref={(el) => (items.current[i] = el as HTMLLIElement | null)} className="flex flex-col gap-3">
-                  <span className="text-[14px] text-foreground/60 tabular-nums tracking-[0.01em]">{pad(i)}</span>
-                  <h3 className="font-display font-normal leading-[1.1] tracking-[-0.02em] text-[28px] md:text-[32px]">{s.name}</h3>
-                  <p className="text-[14px] leading-[1.5] tracking-[0.01em] text-foreground/70 max-w-[38ch]">{s.line}</p>
-                </div>
-                {/* Phones and tablets: the picture simply sits under its text */}
-                {!wide && (
-                  <div className="mt-3 overflow-hidden rounded-[4px]" style={{ aspectRatio: String(PICTURES[i].ratio) }}>
-                    <Picture pic={PICTURES[i]} />
-                  </div>
-                )}
-              </li>
-            ))}
-          </ol>
-          {wide &&
-            PICTURES.map((pic, i) => (
-              <div
-                key={pic.src}
-                ref={(el) => (cards.current[i] = el)}
-                className="absolute left-0 top-0 origin-bottom overflow-hidden rounded-[4px] will-change-transform"
-                style={{ zIndex: [1, 3, 2, 0][i] ?? 0, transform: "translate3d(0,100vh,0)" }}
-              >
-                <Picture pic={PICTURES[i]} />
+      <div className="relative z-10 bg-background border-t border-foreground/20">
+        <ol className="px-3 pt-8 md:pt-10 pb-12 md:pb-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+          {list.map((s, i) => (
+            <li key={s.name} className="flex flex-col gap-3">
+              <span className="text-[14px] text-foreground/60 tabular-nums tracking-[0.01em]">{pad(i)}</span>
+              <h3 className="font-display font-normal leading-[1.1] tracking-[-0.02em] text-[28px] md:text-[32px]">{s.name}</h3>
+              <p className="text-[14px] leading-[1.5] tracking-[0.01em] text-foreground/70 max-w-[38ch]">{s.line}</p>
+            </li>
+          ))}
+        </ol>
+
+        {wide ? (
+          <Carousel3D pieces={pieces} />
+        ) : (
+          // Phones and tablets: every piece in one row you swipe through
+          <div className="pb-20 flex gap-2 overflow-x-auto snap-x snap-mandatory px-3 scroll-px-3 [scrollbar-width:none]">
+            {pieces.map((pic) => (
+              <div key={pic.src} className="shrink-0 snap-start h-[260px] md:h-[340px] overflow-hidden rounded-[4px] bg-[#171717]" style={{ aspectRatio: String(pic.ratio) }}>
+                <Img pic={pic} />
               </div>
             ))}
-        </div>
+          </div>
+        )}
       </div>
-
     </section>
   );
 };

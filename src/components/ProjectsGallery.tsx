@@ -16,10 +16,8 @@ export const CASES_OPEN = import.meta.env.DEV; // every case opens on localhost 
 export const PUBLIC_CASES = new Set(["tactica", "seedtag-events"]);
 export const caseOpen = (slug: string) => CASES_OPEN || PUBLIC_CASES.has(slug);
 
-// Each project's preview has its own shape (width / height), so moving down
-// the list changes the rhythm. Covers that are mockups keep the proportion
-// they were laid out at, so none of them is cropped; photos and collages
-// take the other shapes (CECI square, ISOLA tall).
+// Each preview takes its cover's own proportion once the cover loads, so
+// nothing is cut at the sides; these are the shapes shown until then.
 export const SHAPES: Record<string, number> = {
   "seedtag-design-system": 16 / 9,
   "ceci-makeup": 1,
@@ -36,12 +34,26 @@ const previewSize = (ratio: number) => {
   return { width: `min(${(32 * k).toFixed(2)}vw, ${Math.round(600 * k)}px)`, height: `min(${((32 * k) / ratio).toFixed(2)}vw, ${Math.round((600 * k) / ratio)}px)` };
 };
 
-/** Cover image or looping video, cropped to its box. */
-const Cover = ({ p }: { p: SanityProject }) =>
+/** Cover image or looping video; tells its own proportion once it knows it, so its box can match and nothing is cut. */
+const Cover = ({ p, onRatio }: { p: SanityProject; onRatio?: (slug: string, ratio: number) => void }) =>
   p.coverVideoUrl ? (
-    <video src={p.coverVideoUrl} autoPlay muted loop playsInline className="w-full h-full object-cover" />
+    <video
+      src={p.coverVideoUrl}
+      autoPlay
+      muted
+      loop
+      playsInline
+      onLoadedMetadata={(e) => e.currentTarget.videoHeight && onRatio?.(p.slug, e.currentTarget.videoWidth / e.currentTarget.videoHeight)}
+      className="w-full h-full object-cover"
+    />
   ) : (
-    <img src={urlForImage(p.cover).width(900).quality(80).url()} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
+    <img
+      src={urlForImage(p.cover).width(900).quality(80).url()}
+      alt={p.title}
+      loading="lazy"
+      onLoad={(e) => e.currentTarget.naturalHeight && onRatio?.(p.slug, e.currentTarget.naturalWidth / e.currentTarget.naturalHeight)}
+      className="w-full h-full object-cover"
+    />
   );
 
 /**
@@ -84,6 +96,10 @@ const ProjectsGallery = () => {
   const projects = raw.map((p) => localizeProject(p, lang));
   const [loading, setLoading] = useState(true);
   const [hover, setHover] = useState<number | null>(null);
+  // Each cover's own proportion, as it loads; until then the shape set below
+  const [ratios, setRatios] = useState<Record<string, number>>({});
+  const setRatio = (slug: string, r: number) => setRatios((m) => (Math.abs((m[slug] ?? 0) - r) < 0.01 ? m : { ...m, [slug]: r }));
+  const shape = (slug: string) => ratios[slug] ?? SHAPES[slug] ?? 1.5;
   const navigate = useNavigate();
   // Opening a project: the row slides up into the case page's header and the
   // cover under the pointer grows into its big image (a view
@@ -169,8 +185,8 @@ const ProjectsGallery = () => {
                     {p.title}
                   </h2>
                   <span className="hidden md:block text-[14px] opacity-60">{(p.tags ?? []).join(" · ")}</span>
-                  <span className="md:hidden order-3 col-span-2 mt-4 block aspect-[3/2] overflow-hidden rounded-[4px] bg-secondary">
-                    <Cover p={p} />
+                  <span className="md:hidden order-3 col-span-2 mt-4 block overflow-hidden rounded-[4px] bg-secondary" style={{ aspectRatio: String(shape(p.slug)) }}>
+                    <Cover p={p} onRatio={setRatio} />
                   </span>
                 </Row>
               </li>
@@ -181,14 +197,14 @@ const ProjectsGallery = () => {
             aria-hidden="true"
             className="hidden md:block fixed left-0 top-0 z-30 pointer-events-none overflow-hidden rounded-[4px] transition-[opacity,clip-path,width,height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
             style={{
-              ...previewSize(SHAPES[projects[hover ?? -1]?.slug ?? ""] ?? 1.5),
+              ...previewSize(shape(projects[hover ?? -1]?.slug ?? "")),
               opacity: hover === null ? 0 : 1,
               clipPath: hover === null ? "inset(50% 0 50% 0)" : "inset(0 0 0 0)",
             }}
           >
             {projects.map((p, i) => (
               <div key={p._id} className="absolute inset-0 transition-opacity duration-300" style={{ opacity: hover === i ? 1 : 0 }}>
-                <Cover p={p} />
+                <Cover p={p} onRatio={setRatio} />
               </div>
             ))}
           </div>
