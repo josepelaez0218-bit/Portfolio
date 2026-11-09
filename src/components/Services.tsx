@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { useLang, useT } from "@/lib/i18n";
 import { services as getServices } from "@/lib/siteTexts";
-import { Img, LEAD_NAMES, PIECES, type Pic } from "@/components/services-gallery/pieces";
+import { LEAD_NAMES, PIECES, type Pic } from "@/components/services-gallery/pieces";
 import Carousel3D from "@/components/services-gallery/Carousel3D";
 
 // The section's own colours (HSL, like the site's tokens), so every
@@ -13,7 +13,7 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
 /**
  * What Jose does and the work behind it, between the projects and the
  * contact, on a black sheet: a big title, the four services, then the work
- * as a card file that never stops turning (on phones, a row to swipe).
+ * as a card file that never stops turning (on phones, lying flat).
  */
 const Services = () => {
   const lang = useLang();
@@ -57,18 +57,7 @@ const Services = () => {
           ))}
         </ol>
 
-        {wide ? (
-          <Carousel3D pieces={pieces} />
-        ) : (
-          // Phones and tablets: every piece in one row you swipe through
-          <div className="pb-20 flex gap-2 overflow-x-auto snap-x snap-mandatory px-3 scroll-px-3 [scrollbar-width:none]">
-            {pieces.map((pic) => (
-              <div key={pic.src} className="shrink-0 snap-start h-[260px] md:h-[340px] overflow-hidden rounded-[4px] bg-[#171717]" style={{ aspectRatio: String(pic.ratio) }}>
-                <Img pic={pic} />
-              </div>
-            ))}
-          </div>
-        )}
+        <Carousel3D pieces={pieces} upright={wide} />
       </div>
     </section>
   );
