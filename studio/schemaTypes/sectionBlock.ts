@@ -63,6 +63,12 @@ export const sectionBlock = defineType({
               title: 'Alt text (ES)',
               type: 'string',
             }),
+            defineField({
+              name: 'full',
+              title: 'Full width, no frame',
+              description: 'Shown across the whole column at its own proportion, uncropped and without the frame.',
+              type: 'boolean',
+            }),
           ],
         },
       ],

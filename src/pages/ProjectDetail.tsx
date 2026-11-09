@@ -178,7 +178,7 @@ const ProjectDetail = () => {
             className={`reveal py-16 md:py-24 -mx-3 px-3 ${sIdx > 0 ? "border-t border-foreground/15" : ""}`}
             data-reveal
           >
-            <CaseSection s={s} i={sIdx} />
+            <CaseSection s={s} i={sIdx} slug={project.slug} />
           </section>
         ))}
         {project.liveUrl && (

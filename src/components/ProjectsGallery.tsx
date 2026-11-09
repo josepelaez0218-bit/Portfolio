@@ -120,6 +120,16 @@ const ProjectsGallery = () => {
   const preview = useRef<HTMLDivElement>(null);
   const pos = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
 
+  // A project's clip starts over when its row is pointed at, so it's seen from
+  // its first frame (Emotion Quotient's bars grow right away), not mid-loop
+  useEffect(() => {
+    if (hover === null) return;
+    const v = preview.current?.children[hover]?.querySelector("video");
+    if (!v) return;
+    v.currentTime = 0;
+    v.play().catch(() => {});
+  }, [hover]);
+
   useEffect(() => {
     let cancelled = false;
     fetchProjects()

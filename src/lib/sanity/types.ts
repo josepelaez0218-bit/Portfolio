@@ -11,7 +11,7 @@ export interface SanitySectionBlock {
   headline?: string;
   body: string;
   stats?: SanityStat[];
-  images?: ({ alt: string } & SanityImageSource)[];
+  images?: ({ alt: string; full?: boolean } & SanityImageSource)[];
   imagesLayout?: "grid" | "grid-3" | "stacked";
   mediaOrder?: "images-first" | "video-first";
   videoUrl?: string;
