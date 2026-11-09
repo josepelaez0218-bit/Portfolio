@@ -81,7 +81,7 @@ const Index = () => {
           projects slide up over it; once the projects end they stay put in turn
           and “Time to say hello” and the footer slide up over them. */}
       <div className="relative">
-      <section data-hero className="sticky top-0 z-0 w-full h-[100dvh] overflow-hidden bg-[#F5F5F5] flex items-center justify-center touch-pan-y">
+      <section data-hero className="sticky top-0 z-0 w-full h-[100svh] lg:h-[100dvh] overflow-hidden bg-[#F5F5F5] flex items-center justify-center touch-pan-y">
         <div className="relative z-0 w-full pointer-events-none px-6 flex items-center justify-center">
           {heroTitle !== null && (
             <h1

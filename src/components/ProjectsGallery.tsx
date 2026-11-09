@@ -28,10 +28,10 @@ export const SHAPES: Record<string, number> = {
   tactica: 16 / 9, // phones on orange, 1920×1080
 };
 
-// Same area for every shape: that of a 3:2 box 32vw (at most 600px) wide
+// Same area for every shape: that of a 3:2 box 36vw (at most 680px) wide
 const previewSize = (ratio: number) => {
   const k = Math.sqrt(ratio / 1.5);
-  return { width: `min(${(32 * k).toFixed(2)}vw, ${Math.round(600 * k)}px)`, height: `min(${((32 * k) / ratio).toFixed(2)}vw, ${Math.round((600 * k) / ratio)}px)` };
+  return { width: `min(${(36 * k).toFixed(2)}vw, ${Math.round(680 * k)}px)`, height: `min(${((36 * k) / ratio).toFixed(2)}vw, ${Math.round((680 * k) / ratio)}px)` };
 };
 
 /** Cover image or looping video; tells its own proportion once it knows it, so its box can match and nothing is cut. */

@@ -3,6 +3,7 @@ import { useLang, useT } from "@/lib/i18n";
 import { services as getServices } from "@/lib/siteTexts";
 import { LEAD_NAMES, PIECES, type Pic } from "@/components/services-gallery/pieces";
 import Carousel3D from "@/components/services-gallery/Carousel3D";
+import Parallax from "@/components/services-gallery/Parallax";
 
 // The section's own colours (HSL, like the site's tokens), so every
 // text-foreground/… inside takes them: a black sheet between the white ones
@@ -13,7 +14,7 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
 /**
  * What Jose does and the work behind it, between the projects and the
  * contact, on a black sheet: a big title, the four services, then the work
- * as a card file that never stops turning (on phones, lying flat).
+ * as a card file that never stops turning (on phones, a parallax gallery).
  */
 const Services = () => {
   const lang = useLang();
@@ -46,7 +47,9 @@ const Services = () => {
         </div>
       </div>
 
-      <div className="relative z-10 bg-background border-t border-foreground/20">
+      {/* The sheet stops with this line at the top of the screen (see StackSheet);
+          flow-root keeps the card file's bottom margin inside, so the hero never shows below */}
+      <div data-sheet-stop className="relative z-10 flow-root bg-background border-t border-foreground/20">
         <ol className="px-3 pt-8 md:pt-10 pb-12 md:pb-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
           {list.map((s, i) => (
             <li key={s.name} className="flex flex-col gap-3">
@@ -57,7 +60,8 @@ const Services = () => {
           ))}
         </ol>
 
-        <Carousel3D pieces={pieces} upright={wide} />
+        {/* Phones get a lighter gallery: two columns drifting apart as you scroll */}
+        {wide ? <Carousel3D pieces={pieces} /> : <Parallax pieces={pieces.slice(0, 12)} />}
       </div>
     </section>
   );
