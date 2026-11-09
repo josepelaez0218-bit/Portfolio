@@ -37,7 +37,9 @@ const Carousel3D = ({ pieces }: { pieces: Pic[] }) => {
   const HOLE = "min(4vw, 60px)";
   const face = "absolute inset-0 overflow-hidden rounded-[3px] bg-[#171717] [backface-visibility:hidden]";
   return (
-    <div className="relative -mt-10 h-[80svh] min-h-[600px] overflow-hidden" style={{ perspective: "2000px" }}>
+    // Room below, so the section scrolls up until the whole card file is on
+    // screen (the services' numbers go off the top) before the contact covers it
+    <div className="relative -mt-10 mb-[18svh] h-[80svh] min-h-[600px] overflow-hidden" style={{ perspective: "2000px" }}>
       <div ref={spin} className="absolute left-1/2 top-1/2" style={{ transformStyle: "preserve-3d" }}>
         {leaves.map((pic, i) => (
           <div
