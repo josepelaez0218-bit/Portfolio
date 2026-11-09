@@ -33,7 +33,7 @@ const Services = () => {
   }, []);
 
   return (
-    <section id="services" className="relative w-full bg-background text-foreground" style={vars}>
+    <section id="services" className="relative z-20 w-full bg-background text-foreground" style={vars}>
       {/* The title holds at the top while the services slide up over it */}
       <div className="sticky top-0 z-0 px-3 pt-20 md:pt-28 pb-16 md:pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-10 gap-y-6 items-end">
