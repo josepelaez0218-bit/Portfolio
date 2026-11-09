@@ -1,13 +1,29 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useT } from "@/lib/i18n";
 import { contactEmail } from "@/lib/siteTexts";
+import CycleIcon from "@/components/CycleIcon";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Brief = { name: string; email: string; message: string };
 
-/** For now “Send” opens the visitor's email with the brief written in (nothing is stored or sent from here). */
-const sendBrief = ({ name, email, message }: Brief, subject = "New project") => {
+/** The brief goes to /api/contact, which emails it to me; true once it's on its way. */
+const postBrief = async (b: Brief, website: string, elapsed: number) => {
+  try {
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...b, website, elapsed }),
+      signal: AbortSignal.timeout(15_000), // never left on "Sending…": past this, the email fallback
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+};
+
+/** If sending fails, the visitor's own email opens with the brief written in, so it isn't lost. */
+const mailBrief = ({ name, email, message }: Brief, subject = "New project") => {
   const body = `${message.trim()}\n\n${name.trim()} · ${email.trim()}`;
   window.location.href = `mailto:${contactEmail()}?subject=${encodeURIComponent(`${subject} — ${name.trim()}`)}&body=${encodeURIComponent(body)}`;
 };
@@ -43,13 +59,28 @@ const IndexForm = () => {
   const [b, setB] = useState<Brief>({ name: "", email: "", message: "" });
   const [trap, setTrap] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const submit = (e: FormEvent) => {
+  const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
+  const shownAt = useRef(performance.now()); // how long the form has been up, for the server's bot check
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (trap) return;
+    if (state === "sending") return;
     const p = problem(b);
     setError(p);
-    if (!p) sendBrief(b, t("mailSubject"));
+    if (p) return;
+    setState("sending");
+    if (await postBrief(b, trap, performance.now() - shownAt.current)) return setState("sent");
+    setState("idle");
+    mailBrief(b, t("mailSubject"));
   };
+
+  if (state === "sent") {
+    return (
+      <div role="status" className="flex flex-col gap-2 border-t border-foreground/15 pt-6 animate-fade-up" style={{ animationDuration: "0.5s" }}>
+        <p className="text-lead text-foreground text-balance">{t("sentTitle")}</p>
+        <p className="text-[14px] text-foreground/70 tracking-[0.01em] max-w-[46ch]">{t("sentLine")}</p>
+      </div>
+    );
+  }
   return (
     <form onSubmit={submit} noValidate className="flex flex-col">
       <ol className="border-t border-foreground/15">
@@ -86,8 +117,8 @@ const IndexForm = () => {
       </ol>
       <Trap onChange={setTrap} />
       <div className="mt-6 flex flex-col items-start gap-3">
-        <button type="submit" className={PILL}>
-          {t("send")} <span aria-hidden="true">→</span>
+        <button type="submit" disabled={state === "sending"} className={`${PILL} disabled:opacity-60 disabled:hover:scale-100`}>
+          {state === "sending" ? t("sending") : t("letsTalk")} <CycleIcon />
         </button>
         {error && <p role="alert" className={ERROR}>{t(error as "formError")}</p>}
       </div>

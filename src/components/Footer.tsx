@@ -1,11 +1,7 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useT } from "@/lib/i18n";
 import { contactEmail } from "@/lib/siteTexts";
-
-
-const madridTime = () =>
-  new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit" }).format(new Date());
+import { useMadridTime } from "@/lib/madridTime";
 
 /**
  * The end of every page, in black: who, how to write, where to go,
@@ -14,11 +10,7 @@ const madridTime = () =>
 const Footer = () => {
   const t = useT();
   const year = new Date().getFullYear();
-  const [time, setTime] = useState(madridTime);
-  useEffect(() => {
-    const id = setInterval(() => setTime(madridTime()), 15000);
-    return () => clearInterval(id);
-  }, []);
+  const time = useMadridTime();
 
   const LINK = "text-[14px] text-white/70 tracking-[0.01em] transition-colors duration-300 hover:text-white";
   const HEAD = "text-[14px] font-medium text-white/50 tracking-[0.01em]";

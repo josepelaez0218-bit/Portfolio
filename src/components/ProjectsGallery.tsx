@@ -13,7 +13,7 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
 export const CASES_OPEN = import.meta.env.DEV; // every case opens on localhost while we design them
 // On the live site only these case pages open (the rest of the rows stay
 // unclickable; projects set to "open the live site" link out instead)
-export const PUBLIC_CASES = new Set(["tactica"]);
+export const PUBLIC_CASES = new Set(["tactica", "seedtag-events"]);
 export const caseOpen = (slug: string) => CASES_OPEN || PUBLIC_CASES.has(slug);
 
 // Each project's preview has its own shape (width / height), so moving down

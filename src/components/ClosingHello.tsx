@@ -3,7 +3,10 @@ import DotsHello, { DOTS, type DotsHelloHandle } from "@/components/lab-essay/pi
 import { ease, range } from "@/components/lab-essay/lib";
 import ContactForm from "@/components/ContactForm";
 import { useT } from "@/lib/i18n";
-import CycleIcon from "@/components/CycleIcon";
+import { contactEmail } from "@/lib/siteTexts";
+import { useMadridTime } from "@/lib/madridTime";
+
+const INK = "#2b4cff"; // the blue of the dots
 
 /**
  * The close of the home: who I am on the left, me waving in blue dots on the
@@ -16,12 +19,15 @@ const ClosingHello = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const dots = useRef<DotsHelloHandle>(null);
   const t = useT();
+  const time = useMadridTime();
 
-  // The brief opens in place of the text — from the CTA here, or from any
-  // "Start a project" elsewhere on the site (they link to /#start).
-  const [briefOpen, setBriefOpen] = useState(false);
+  // The brief is always open here; any "Start a project" elsewhere on the
+  // site (they link to /#start) brings you to it with the name ready to type.
   useEffect(() => {
-    const open = () => setBriefOpen(true);
+    const open = () => {
+      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+      setTimeout(() => document.getElementById("contact-name")?.focus({ preventScroll: true }), 600);
+    };
     window.addEventListener("open-brief", open);
     if (window.location.hash === "#start") open();
     return () => window.removeEventListener("open-brief", open);
@@ -80,45 +86,43 @@ const ClosingHello = () => {
 
   return (
     // Starts at the same height as the projects index (pt-16 / md:pt-24), so
-    // each sheet reads like a slide; the text sits centred on the dots box.
+    // each sheet reads like a slide.
     <section ref={sectionRef} id="contact" className="relative z-10 w-full bg-background text-foreground px-3 pt-16 md:pt-24 pb-5 md:pb-10 lg:min-h-screen">
       {/* A line on top, edge to edge, the same grey as the index rows */}
       <div aria-hidden="true" className="absolute top-0 inset-x-0 h-px bg-foreground/15" />
-      <div className="w-full grid grid-cols-1 lg:grid-cols-12 lg:items-start gap-x-10 gap-y-12">
-        {/* What to do next: the brief */}
-        {/* Label, text and form start together at the top, where "Projects" sits on the index */}
-        <div className="lg:col-span-5 flex flex-col gap-8">
-          {briefOpen ? (
-            <div key="brief" className="flex flex-col gap-6 animate-fade-up" style={{ animationDuration: "0.5s" }}>
-              <ContactForm />
-              <button
-                type="button"
-                onClick={() => setBriefOpen(false)}
-                className="self-start py-2 text-[14px] text-foreground/60 tracking-[0.01em] transition-colors duration-300 hover:text-foreground"
-              >
-                ← {t("back")}
-              </button>
-            </div>
-          ) : (
-            <div key="intro" className="flex flex-col gap-5 animate-fade-up" style={{ animationDuration: "0.5s" }}>
-              <p className="text-lead text-foreground max-w-[26ch] text-balance">
-                {t("closeLead")}
-              </p>
-              <p className="text-[14px] text-foreground/70 tracking-[0.01em] max-w-[46ch]">
-                {t("closeLine")}
-              </p>
-              <p className="text-[14px] text-foreground/70 tracking-[0.01em] max-w-[46ch]">
-                {t("closeMore")}
-              </p>
-              <button
-                type="button"
-                onClick={() => setBriefOpen(true)}
-                className="mt-4 self-start inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-transform duration-300 hover:scale-[1.04]"
-              >
-                {t("startProject")} <CycleIcon />
-              </button>
-            </div>
-          )}
+      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-x-10 gap-y-12">
+        {/* What to do next: the brief, right here. On wide screens the column is
+            as tall as the dots box: the pitch on top, the form, then the email. */}
+        <div className="lg:col-span-5 flex flex-col gap-10 lg:justify-between">
+          <div className="flex flex-col gap-5">
+            {/* A pill like the site's buttons, tinted with the dots' blue */}
+            <p
+              className="self-start inline-flex items-center gap-2 rounded-full pl-3 pr-4 py-2 text-[14px] font-medium text-foreground tracking-[0.01em]"
+              style={{ background: `${INK}14` }}
+            >
+              {/* Material Symbols "event_available" (Google, Apache 2.0) */}
+              <svg aria-hidden="true" viewBox="0 -960 960 960" className="w-[18px] h-[18px]" style={{ fill: INK }}>
+                <path d="M438-226 296-368l58-58 84 84 168-168 58 58-226 226ZM200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z" />
+              </svg>
+              {t("available")}
+            </p>
+            <p className="text-lead text-foreground max-w-[26ch] text-balance">
+              {t("closeLead")}
+            </p>
+            <p className="text-[14px] text-foreground/70 tracking-[0.01em] max-w-[46ch]">
+              {t("replyNote")}
+            </p>
+          </div>
+
+          <ContactForm />
+
+          {/* For whoever would rather write from their own email */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] tracking-[0.01em]">
+            <a href={`mailto:${contactEmail()}`} className="text-foreground underline decoration-foreground/30 underline-offset-4 transition-colors duration-300 hover:decoration-foreground break-all">
+              {contactEmail()}
+            </a>
+            <span className="text-foreground/70 tabular-nums">Madrid · {time}</span>
+          </div>
         </div>
 
         {/* Me, waving, in dots */}
@@ -128,7 +132,7 @@ const ClosingHello = () => {
           aria-label="Me waving, drawn in blue dots"
           role="img"
         >
-          <DotsHello live={camera} ref={dots} startVh={0} ink="#2b4cff" ground="#f5f5f5" invert waveFps={13} />
+          <DotsHello live={camera} ref={dots} startVh={0} ink={INK} ground="#f5f5f5" invert waveFps={13} />
           <div className="absolute left-1/2 -translate-x-1/2 bottom-4 md:bottom-6 z-10 flex items-center gap-2 whitespace-nowrap">
             <button
               onClick={camera ? stopCamera : startCamera}
