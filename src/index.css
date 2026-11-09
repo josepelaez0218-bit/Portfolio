@@ -155,3 +155,11 @@
     transition: none;
   }
 }
+
+/* Phones: no pull-to-refresh, which fired when scrolling back up to the cloth */
+@media (max-width: 1023px) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+}

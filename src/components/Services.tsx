@@ -64,7 +64,7 @@ const Services = () => {
         </ol>
 
         {/* Phones get a lighter gallery: the pieces in layers drifting at different speeds */}
-        {wide ? <Carousel3D pieces={pieces} /> : <Parallax pieces={pieces.slice(0, 12)} />}
+        {wide ? <Carousel3D pieces={pieces} /> : <Parallax pieces={pieces.filter((p) => p.ratio > 0.6).slice(0, 12)} />}
       </div>
     </section>
   );

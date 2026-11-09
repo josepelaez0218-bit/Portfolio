@@ -337,11 +337,12 @@ const ClothHero = ({ onUnsupported }: { onUnsupported?: () => void }) => {
       raf = requestAnimationFrame(loop);
       if (document.hidden || window.scrollY > window.innerHeight * 1.1) {
         last = 0;
+        lastScroll = window.scrollY; // back from below: not one big gust for the whole way up
         return;
       }
       if (isMobile && !reduced) {
         const sy = window.scrollY;
-        gust = Math.max(-0.08, Math.min(0.08, gust + (sy - lastScroll) * 0.0012));
+        gust = Math.max(-0.08, Math.min(0.08, gust + Math.max(-40, Math.min(40, sy - lastScroll)) * 0.0012));
         lastScroll = sy;
       }
       if (!last) {
