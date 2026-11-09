@@ -50,17 +50,20 @@ const Services = () => {
       {/* The sheet stops with this line at the top of the screen (see StackSheet);
           flow-root keeps the card file's bottom margin inside, so the hero never shows below */}
       <div data-sheet-stop className="relative z-10 flow-root bg-background border-t border-foreground/20">
-        <ol className="px-3 pt-8 md:pt-10 pb-12 md:pb-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+        {/* Phones: a compact index, number and name on one line, rules between */}
+        <ol className="px-3 pt-2 md:pt-10 pb-12 md:pb-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 md:gap-y-12">
           {list.map((s, i) => (
-            <li key={s.name} className="flex flex-col gap-3">
-              <span className="text-[14px] text-foreground/60 tabular-nums tracking-[0.01em]">{pad(i)}</span>
-              <h3 className="font-display font-normal leading-[1.1] tracking-[-0.02em] text-[28px] md:text-[32px]">{s.name}</h3>
-              <p className="text-[14px] leading-[1.5] tracking-[0.01em] text-foreground/70 max-w-[38ch]">{s.line}</p>
+            <li key={s.name} className="flex flex-col gap-2 md:gap-3 py-5 md:py-0 border-b border-foreground/15 md:border-0">
+              <div className="flex items-baseline gap-4 md:flex-col md:items-stretch md:gap-3">
+                <span className="text-[14px] text-foreground/60 tabular-nums tracking-[0.01em]">{pad(i)}</span>
+                <h3 className="font-display font-normal leading-[1.1] tracking-[-0.02em] text-[26px] md:text-[32px]">{s.name}</h3>
+              </div>
+              <p className="text-[14px] leading-[1.5] tracking-[0.01em] text-foreground/70 max-w-[38ch] pl-[calc(2ch+1rem)] md:pl-0">{s.line}</p>
             </li>
           ))}
         </ol>
 
-        {/* Phones get a lighter gallery: two columns drifting apart as you scroll */}
+        {/* Phones get a lighter gallery: the pieces in layers drifting at different speeds */}
         {wide ? <Carousel3D pieces={pieces} /> : <Parallax pieces={pieces.slice(0, 12)} />}
       </div>
     </section>

@@ -134,6 +134,10 @@ const ClothHero = ({ onUnsupported }: { onUnsupported?: () => void }) => {
     let simTime = 0, windTarget = 0.012, windSmooth = 0.03, windNextAt = 3;
     let mouseX = -1e4, mouseY = -1e4, mouseActive = false;
     const PUSH = BASE * 0.1;
+    // Phones: a finger reaches wider than a cursor, and scrolling blows a gust
+    // through the cloth, so it answers even when it isn't touched
+    const reach = isMobile ? 1.7 : 1;
+    let gust = 0, lastScroll = window.scrollY;
 
     const simulate = (dt: number) => {
       simTime += dt;
@@ -150,18 +154,21 @@ const ClothHero = ({ onUnsupported }: { onUnsupported?: () => void }) => {
           windSmooth * (0.55 + 0.45 * Math.sin(T * 0.43 + col * 0.21 + row * 0.08)) * (0.65 + 0.35 * Math.sin(T * 0.19 - row * 0.14)) +
           0.005 * Math.sin(T * 1.2 + col * 0.38);
         const wy = 0.003 * Math.sin(T * 0.28 + col * 0.17) * (row / ROWS);
+        const gx = gust * (row / ROWS) * (0.7 + 0.3 * Math.sin(col * 0.4 + T));
         const vx = (pX[i] - pPX[i]) * DAMPING, vy = (pY[i] - pPY[i]) * DAMPING;
         pPX[i] = pX[i];
         pPY[i] = pY[i];
-        pX[i] += vx + wx;
+        pX[i] += vx + wx + gx;
         pY[i] += vy + wy + GRAVITY;
       }
+      gust *= 0.97;
       if (mouseActive) {
+        const push = PUSH * reach;
         for (let i = 0; i < N; i++) {
           if (pPin[i]) continue;
           const dx = pX[i] - mouseX, dy = pY[i] - mouseY, d2 = dx * dx + dy * dy;
-          if (d2 < PUSH * PUSH && d2 > 0.01) {
-            const d = Math.sqrt(d2), f = ((PUSH - d) / PUSH) * 3.5;
+          if (d2 < push * push && d2 > 0.01) {
+            const d = Math.sqrt(d2), f = ((push - d) / push) * 3.5;
             pX[i] += (dx / d) * f;
             pY[i] += (dy / d) * f;
           }
@@ -309,14 +316,18 @@ const ClothHero = ({ onUnsupported }: { onUnsupported?: () => void }) => {
     };
 
     // Pointer in cloth space; no preventDefault, so touch still scrolls the page
-    const onMove = (e: PointerEvent) => {
+    const point = (x: number, y: number) => {
       const rect = canvas.getBoundingClientRect();
       const s = SIZE / BASE;
-      mouseX = (e.clientX - rect.left - OX) / s;
-      mouseY = (e.clientY - rect.top - OY) / s;
-      mouseActive = e.clientY >= rect.top && e.clientY <= rect.bottom;
+      mouseX = (x - rect.left - OX) / s;
+      mouseY = (y - rect.top - OY) / s;
+      mouseActive = y >= rect.top && y <= rect.bottom;
     };
+    const onMove = (e: PointerEvent) => (!isMobile || e.pointerType !== "touch") && point(e.clientX, e.clientY);
     const onLeave = () => (mouseActive = false);
+    // A finger: pointer events stop as soon as the page starts scrolling, but
+    // touch events keep coming, so the cloth follows the thumb all the way
+    const onTouch = (e: TouchEvent) => e.touches[0] && point(e.touches[0].clientX, e.touches[0].clientY);
 
     // Fixed timestep, so the motion stays smooth on any refresh rate. The
     // hero sits under the next sections once you scroll: stop drawing then.
@@ -327,6 +338,11 @@ const ClothHero = ({ onUnsupported }: { onUnsupported?: () => void }) => {
       if (document.hidden || window.scrollY > window.innerHeight * 1.1) {
         last = 0;
         return;
+      }
+      if (isMobile && !reduced) {
+        const sy = window.scrollY;
+        gust = Math.max(-0.08, Math.min(0.08, gust + (sy - lastScroll) * 0.0012));
+        lastScroll = sy;
       }
       if (!last) {
         last = now;
@@ -356,6 +372,12 @@ const ClothHero = ({ onUnsupported }: { onUnsupported?: () => void }) => {
     ro.observe(canvas);
     window.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("pointerleave", onLeave);
+    if (isMobile) {
+      window.addEventListener("touchstart", onTouch, { passive: true });
+      window.addEventListener("touchmove", onTouch, { passive: true });
+      window.addEventListener("touchend", onLeave);
+      window.addEventListener("touchcancel", onLeave);
+    }
     raf = requestAnimationFrame(loop);
     return () => {
       cancelled = true;
@@ -363,6 +385,10 @@ const ClothHero = ({ onUnsupported }: { onUnsupported?: () => void }) => {
       ro.disconnect();
       window.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerleave", onLeave);
+      window.removeEventListener("touchstart", onTouch);
+      window.removeEventListener("touchmove", onTouch);
+      window.removeEventListener("touchend", onLeave);
+      window.removeEventListener("touchcancel", onLeave);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
