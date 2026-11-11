@@ -13,7 +13,7 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
 export const CASES_OPEN = import.meta.env.DEV; // every case opens on localhost while we design them
 // On the live site only these case pages open (the rest of the rows stay
 // unclickable; projects set to "open the live site" link out instead)
-export const PUBLIC_CASES = new Set(["tactica", "seedtag-events", "isola", "seedtag-design-system", "ceci-makeup", "mosaic"]);
+export const PUBLIC_CASES = new Set(["tactica", "seedtag-events", "black-coffee", "seedtag-design-system", "ceci-makeup", "mosaic"]);
 export const caseOpen = (slug: string) => CASES_OPEN || PUBLIC_CASES.has(slug);
 
 // Each preview takes its cover's own proportion once the cover loads, so
@@ -25,6 +25,7 @@ export const SHAPES: Record<string, number> = {
   "seedtag-events": 16 / 10, // mockup, 2880×1800
   "seedtag-emotion-quotient": 3 / 2, // mockup, 1600×1067
   isola: 4 / 5,
+  "black-coffee": 16 / 9, // wordmark over coffee beans, 1440×810
   tactica: 16 / 9, // phones on orange, 1920×1080
 };
 

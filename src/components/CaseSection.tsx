@@ -73,7 +73,7 @@ export const CaseSection = ({ s, i, bare = false, slug = "" }: { s: SanitySectio
             {/* Pictures marked full go first, across the axis at their own proportion, unframed */}
             {media.filter(isFull).map((m, k) => (
               <div key={`full-${k}`} className="md:col-span-2">
-                {m.kind === "img" && <img src={urlForImage(m.im).width(2400).quality(85).url()} alt={m.im.alt} loading="lazy" className="block w-full h-auto" />}
+                {m.kind === "img" && <img src={urlForImage(m.im).width(2400).quality(85).url()} alt={m.im.alt} loading="lazy" className="block w-full h-auto rounded-[10px]" />}
               </div>
             ))}
             {framed.map((m, k) => {
@@ -109,7 +109,7 @@ const Framed = ({ m, ratio, w, bare = false, whole = false }: { m: Media; ratio:
   // A 1px hairline drawn over the picture (inside, so sizes don't change):
   // white pieces keep their edge on the white page; on dark ones it's invisible
   <div
-    className={`relative overflow-hidden rounded-[4px] bg-[#f5f5f5] ${bare ? "" : "after:pointer-events-none after:absolute after:inset-0 after:rounded-[4px] after:border after:border-foreground/10"}`}
+    className={`relative overflow-hidden rounded-[10px] bg-[#f5f5f5] ${bare ? "" : "after:pointer-events-none after:absolute after:inset-0 after:rounded-[10px] after:border after:border-foreground/10"}`}
     style={{ aspectRatio: String(ratio) }}
   >
     <div className={`w-full h-full ${whole ? "p-[6%]" : ""}`}>
