@@ -505,39 +505,73 @@ const NebrijaAudit = () => {
         </div>
       )}
 
-      {/* Cover */}
-      <header className="px-3 pt-28 md:pt-36 pb-16 md:pb-24 grid grid-cols-1 lg:grid-cols-12 lg:gap-x-10">
-        <div className="lg:col-span-10 flex flex-col gap-8">
-          <p className="text-[14px] text-foreground/60 tracking-[0.01em]">Auditoría de marca y presencia digital</p>
-          <h1 className="font-display font-normal leading-[1.02] tracking-[-0.03em] text-[clamp(2.5rem,6.2vw,6.5rem)] text-balance">
-            Una universidad con argumentos y sin una marca que los cuente
-          </h1>
-          <p className="text-lead text-foreground max-w-[44ch] text-balance">
-            Nebrija tiene datos que muchas universidades querrían. Su presencia digital no los transmite: la web, los institutos y las redes parecen de instituciones distintas.
-          </p>
-          <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5 border-t border-foreground/15 pt-6 max-w-[900px]">
+      {/* Cover: a 12-column frame. Top line: what it is (left) and the
+          ficha (right). Middle: the title (cols 1–8) against the lead and the
+          way in (cols 9–12, bottom-aligned). Base: four figures across the
+          full width, one per column group, in the chart colour. */}
+      <header className="px-3 pt-24 md:pt-28 pb-12 md:pb-16 flex flex-col gap-12 md:gap-16 lg:min-h-[calc(100svh-1rem)] lg:justify-between">
+        <div className="grid grid-cols-2 lg:grid-cols-12 gap-x-6 lg:gap-x-10 gap-y-4 border-b border-foreground/15 pb-5">
+          <p className="col-span-2 lg:col-span-6 text-[14px] text-foreground/60 tracking-[0.01em]">Auditoría de marca y presencia digital</p>
+          <dl className="col-span-2 lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3">
             {[
               ["Para", "Universidad Nebrija"],
               ["Por", "Jose Peláez"],
-              ["Fecha", "20 noviembre 2026"],
+              ["Fecha", "20 nov 2026"],
               ["Lectura", "8 minutos"],
             ].map(([k, v]) => (
-              <div key={k} className="flex flex-col gap-1">
-                <dt className="text-[14px] text-foreground/60">{k}</dt>
-                <dd className="text-[16px] text-foreground">{v}</dd>
+              <div key={k} className="flex flex-col gap-0.5">
+                <dt className="text-[13px] text-foreground/50">{k}</dt>
+                <dd className="text-[14px] text-foreground">{v}</dd>
               </div>
             ))}
           </dl>
-          <div className="flex flex-wrap gap-3 print:hidden">
-            <button
-              type="button"
-              onClick={() => go("resumen")}
-              className="inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-transform duration-300 hover:scale-[1.04]"
-            >
-              Empezar por el resumen <span aria-hidden="true">↓</span>
-            </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-10 gap-y-10 lg:items-end">
+          <h1 className="lg:col-span-8 font-display font-normal leading-[1.0] tracking-[-0.03em] text-[clamp(2.6rem,6.4vw,7rem)] text-balance">
+            Una universidad con argumentos y sin una marca que los cuente
+          </h1>
+          <div className="lg:col-span-4 flex flex-col gap-6 lg:pb-3">
+            <p className="text-lead text-foreground text-balance">
+              Nebrija tiene datos que muchas universidades querrían. Su presencia digital no los transmite: la web, los institutos y las redes parecen de instituciones distintas.
+            </p>
+            <div className="flex flex-wrap gap-3 print:hidden">
+              <button
+                type="button"
+                onClick={() => go("resumen")}
+                className="inline-flex items-center gap-3 rounded-full bg-foreground text-background px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-transform duration-300 hover:scale-[1.04]"
+              >
+                Empezar por el resumen <span aria-hidden="true">↓</span>
+              </button>
+            </div>
           </div>
         </div>
+
+        <ul className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-foreground/15 border-y border-foreground/15">
+          {[
+            ["7", "versiones del logotipo", "logotipo"],
+            ["8", "tonos de rojo", "sistema"],
+            ["61", "tamaños de letra", "tipografia"],
+            ["19", "estilos de botón", "sistema"],
+          ].map(([n, l, to]) => (
+            <li key={l} className="bg-background [&:nth-child(odd)>a]:pl-0 lg:[&:nth-child(3)>a]:!pl-6">
+              <a
+                href={`#${to}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  go(to);
+                }}
+                className="group flex h-full flex-col gap-2 py-5 px-4 lg:px-6"
+              >
+                <span className="font-display font-normal leading-[0.9] tracking-[-0.03em] text-[clamp(3rem,6vw,6rem)] tabular-nums text-[var(--chart)]">{n}</span>
+                <span className="flex items-center justify-between gap-3 text-[14px] text-foreground/70">
+                  {l}
+                  <span aria-hidden="true" className="text-foreground/30 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-foreground">→</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 print:block">
