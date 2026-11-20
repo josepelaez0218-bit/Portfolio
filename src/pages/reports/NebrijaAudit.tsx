@@ -23,16 +23,13 @@ import {
   STATE_LABEL,
   TECH,
   UNITS,
-  CONFIDENCE_LABEL,
   FAMILIES,
   FUNNEL,
-  IMPACT,
   PRIORITY_LABEL,
   TYPE_SITES,
   WEIGHTS,
   QUICK_WINS_TAGGED,
   TAGS,
-  type Confidence,
   type Priority,
   type Shot,
   type State,
@@ -193,17 +190,6 @@ const Rows = ({ head, rows }: { head: string[]; rows: ReactNode[][] }) => {
     </div>
   );
 };
-
-const CONF_LOOK: Record<Confidence, string> = {
-  alta: "bg-[#E8F6EE] text-[#067647]",
-  media: "bg-[#FEF4E6] text-[#A15C07]",
-  baja: "bg-foreground/[0.06] text-foreground/60",
-  medir: "border border-foreground/20 text-foreground/70",
-};
-
-const ConfidenceTag = ({ c }: { c: Confidence }) => (
-  <span className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.01em] ${CONF_LOOK[c]}`}>{CONFIDENCE_LABEL[c]}</span>
-);
 
 // ——— Charts (plain HTML, drawn to scale from the data) ———
 
@@ -1037,9 +1023,9 @@ const NebrijaAudit = () => {
             </div>
           </Section>
 
-          <Section id="impacto" title="Impacto esperado" lead="Cuánto podría mejorar cada acción.">
+          <Section id="impacto" title="Impacto esperado" lead="Más solicitudes desde la misma web.">
             <Body>
-              Cada paso del embudo pierde candidatos. Debajo, el margen de mejora estimado de cada acción, calculado a partir de estudios del sector y con su nivel de fiabilidad. No son una promesa: el resultado real depende del punto de partida de Nebrija, que la fase de diagnóstico mediría con vuestros datos.
+              Cada paso del recorrido pierde candidatos. Estas son las acciones del informe que mejoran cada uno; la fase de diagnóstico mediría con vuestros datos el punto de partida y el efecto de cada mejora.
             </Body>
             <figure className="flex flex-col gap-4">
               {/* The admissions journey: four steps on one line (a timeline with
@@ -1079,44 +1065,6 @@ const NebrijaAudit = () => {
                 El recorrido de un futuro estudiante hasta pedir información, y las acciones de este informe que mejoran cada paso. Con los datos de analítica se pondría la cifra real de cada uno.
               </figcaption>
             </figure>
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {IMPACT.map((it) => (
-                <li key={it.action} className="rounded-[4px] bg-[#f5f5f5] px-5 py-5 flex flex-col gap-5">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[13px] text-foreground/60">{it.improves}</span>
-                    <PriorityTag p={it.priority} short />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="font-display font-normal leading-[1] tracking-[-0.02em] text-[32px] md:text-[40px] tabular-nums">{it.gain}</span>
-                    <span className="text-[14px] text-foreground/60">{it.unit}</span>
-                  </div>
-                  <div className="flex flex-col gap-2 border-t border-foreground/10 pt-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-[14px] font-medium text-foreground">Cómo lo calculamos</span>
-                      <ConfidenceTag c={it.confidence} />
-                    </div>
-                    <p className="text-[14px] leading-[1.55] text-foreground/70">{it.basis}</p>
-                  </div>
-                  <div className="mt-auto flex flex-col gap-2 border-t border-foreground/10 pt-4">
-                    <a
-                      href={`#${it.to}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        go(it.to);
-                      }}
-                      className="group flex items-start justify-between gap-3 text-[16px] font-medium text-foreground"
-                    >
-                      {it.action}
-                      <span aria-hidden="true" className="text-foreground/40 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-foreground">→</span>
-                    </a>
-                    <span className="text-[13px] text-foreground/50">Se mide con: {it.measure}</span>
-                    <a href={it.url} target="_blank" rel="noopener noreferrer" className="text-[13px] text-foreground/50 underline underline-offset-2 decoration-foreground/20 hover:text-foreground">
-                      Fuente: {it.source}
-                    </a>
-                  </div>
-                </li>
-              ))}
-            </ul>
           </Section>
 
           <Section id="siguiente" title="Siguiente paso" lead="Completar el diagnóstico con los datos internos.">
