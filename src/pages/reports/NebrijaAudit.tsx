@@ -147,12 +147,12 @@ const Section = ({ id, title, lead, children }: { id: string; title: string; lea
   <section id={id} data-audit-section className="scroll-mt-20 lg:scroll-mt-6 border-t border-foreground/15 px-3 lg:px-10 py-16 md:py-24 flex flex-col gap-10">
     <header className="flex flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-        <div className="flex items-baseline gap-4 min-w-0">
+        <div className="flex flex-col gap-2 min-w-0">
           <span className="text-[14px] text-foreground/60 tabular-nums">{num(id)}</span>
           <h2 className="font-display font-normal leading-[1.1] tracking-[-0.02em] text-[28px] md:text-[40px] text-balance">{title}</h2>
         </div>
         {TAGS[id] && (
-          <div className="flex flex-wrap gap-2 md:pt-2.5 ml-auto">
+          <div className="flex flex-wrap gap-2 md:self-end md:pb-1.5 ml-auto">
             <Chip state={TAGS[id].state} />
             {TAGS[id].priority && <PriorityTag p={TAGS[id].priority!} />}
           </div>
