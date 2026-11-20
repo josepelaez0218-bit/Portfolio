@@ -437,7 +437,9 @@ const NebrijaAudit = () => {
   const activeLabel = SECTIONS.find((s) => s.id === active)?.label ?? "";
 
   return (
-    <div style={{ "--chart": "#2B4CFF", "--chart-mid": "#8FA2FF", "--chart-soft": "#DCE3FF" } as React.CSSProperties}>
+    // Platypi in this report only: Light (300), so the serif leads stay
+    // quieter than the section titles. The rest of the site keeps 400.
+    <div className="[&_.text-lead]:!font-light" style={{ "--chart": "#2B4CFF", "--chart-mid": "#8FA2FF", "--chart-soft": "#DCE3FF" } as React.CSSProperties}>
       <Helmet>
         <html lang="es" />
         <title>Auditoría de marca · Universidad Nebrija — Jose Peláez</title>
