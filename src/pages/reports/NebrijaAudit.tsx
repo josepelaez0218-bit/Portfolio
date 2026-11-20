@@ -4,10 +4,18 @@ import { Helmet } from "react-helmet-async";
 import { contactEmail } from "@/lib/siteTexts";
 import {
   DATA_NEEDED,
+  DS_STATS,
   FIGURES,
+  GREYS_ALL,
+  HEADINGS_HOME,
+  PER_SITE,
+  RADII,
+  REDS_ALL,
+  SIZES_ALL,
+  SIZES_IDEAL,
+  SIZES_MAIN,
   IMG,
   PHASES,
-  QUICK_WINS,
   REDS,
   SCORE,
   SHOTS,
@@ -15,6 +23,10 @@ import {
   STATE_LABEL,
   TECH,
   UNITS,
+  PRIORITY_LABEL,
+  QUICK_WINS_TAGGED,
+  TAGS,
+  type Priority,
   type Shot,
   type State,
 } from "./nebrijaData";
@@ -36,6 +48,7 @@ const SECTIONS = [
   { id: "logotipo", label: "Logotipo" },
   { id: "color", label: "Color" },
   { id: "tipografia", label: "Tipografía" },
+  { id: "sistema", label: "Sistema de diseño" },
   { id: "fotografia", label: "Fotografía" },
   { id: "web", label: "Web principal" },
   { id: "movil", label: "Móvil" },
@@ -53,19 +66,34 @@ const PDF = `${IMG}/auditoria-marca-nebrija.pdf`;
 
 // ——— Small pieces ———
 
-const Chip = ({ state }: { state: State }) => {
-  const look =
-    state === "critico"
-      ? "bg-foreground text-background"
-      : state === "mejorable"
-        ? "border border-foreground/30 text-foreground"
-        : "bg-[#f5f5f5] text-foreground/60";
-  return (
-    <span className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.01em] ${look}`}>
-      {STATE_LABEL[state]}
-    </span>
-  );
+const STATE_LOOK: Record<State, { chip: string; dot: string }> = {
+  critico: { chip: "bg-[#FDECEC] text-[#B42318]", dot: "bg-[#D92D20]" },
+  mejorable: { chip: "bg-[#FEF4E6] text-[#A15C07]", dot: "bg-[#F79009]" },
+  correcto: { chip: "bg-[#E8F6EE] text-[#067647]", dot: "bg-[#17B26A]" },
 };
+
+const Chip = ({ state }: { state: State }) => (
+  <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.01em] ${STATE_LOOK[state].chip}`}>
+    <span aria-hidden="true" className={`size-1.5 rounded-full ${STATE_LOOK[state].dot}`} />
+    {STATE_LABEL[state]}
+  </span>
+);
+
+const PRIORITY_LOOK: Record<Priority, string> = {
+  1: "bg-foreground text-background",
+  2: "border border-foreground/40 text-foreground",
+  3: "border border-foreground/15 text-foreground/60",
+};
+
+const PriorityTag = ({ p, short = false }: { p: Priority; short?: boolean }) => (
+  <span className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.01em] tabular-nums ${PRIORITY_LOOK[p]}`}>
+    {short ? `P${p}` : `P${p} · ${PRIORITY_LABEL[p]}`}
+  </span>
+);
+
+const Tag = ({ children }: { children: ReactNode }) => (
+  <span className="inline-flex shrink-0 items-center rounded-full bg-[#f5f5f5] px-3 py-1 text-[12px] font-medium tracking-[0.01em] text-foreground/70">{children}</span>
+);
 
 const Label = ({ children }: { children: ReactNode }) => (
   <p className="text-[14px] font-medium text-foreground/60 tracking-[0.01em]">{children}</p>
@@ -120,6 +148,12 @@ const Section = ({ id, title, lead, children }: { id: string; title: string; lea
         <span className="text-[14px] text-foreground/60 tabular-nums">{num(id)}</span>
         <h2 className="font-display font-normal leading-[1.1] tracking-[-0.02em] text-[28px] md:text-[40px] text-balance">{title}</h2>
       </div>
+      {TAGS[id] && (
+        <div className="flex flex-wrap gap-2">
+          <Chip state={TAGS[id].state} />
+          {TAGS[id].priority && <PriorityTag p={TAGS[id].priority!} />}
+        </div>
+      )}
       {lead && <p className="text-lead text-foreground max-w-[40ch] text-balance">{lead}</p>}
     </header>
     {children}
@@ -150,6 +184,127 @@ const Rows = ({ head, rows }: { head: string[]; rows: ReactNode[][] }) => {
     </div>
   );
 };
+
+// ——— Charts (plain HTML, drawn to scale from the data) ———
+
+/** Horizontal bars; `ghost` draws a second, lighter value on the same track */
+const Bars = ({
+  items,
+  max,
+  unit = "",
+  legend,
+}: {
+  items: { label: string; value: number; ghost?: number; display?: string; strong?: boolean }[];
+  max: number;
+  unit?: string;
+  legend?: [string, string];
+}) => (
+  <figure className="flex flex-col gap-3">
+    {legend && (
+      <div className="flex flex-wrap gap-5 text-[13px] text-foreground/60">
+        <span className="flex items-center gap-2"><i className="inline-block size-2.5 rounded-[2px] bg-foreground" />{legend[0]}</span>
+        <span className="flex items-center gap-2"><i className="inline-block size-2.5 rounded-[2px] bg-foreground/20" />{legend[1]}</span>
+      </div>
+    )}
+    <ul className="flex flex-col gap-3">
+      {items.map((it) => (
+        <li key={it.label} className="grid grid-cols-[minmax(0,9rem)_1fr] md:grid-cols-[12rem_1fr] items-center gap-4">
+          <span className={`text-[14px] leading-[1.3] ${it.strong ? "font-medium text-foreground" : "text-foreground/70"}`}>{it.label}</span>
+          <span className="flex flex-col gap-1">
+            <span className="flex items-center gap-3">
+              <span className={`h-3 rounded-[2px] ${it.strong === false ? "bg-foreground/40" : "bg-foreground"}`} style={{ width: `${Math.max(0.6, (it.value / max) * 100)}%` }} />
+              <span className="text-[14px] tabular-nums whitespace-nowrap">{it.display ?? `${it.value}${unit}`}</span>
+            </span>
+            {it.ghost !== undefined && (
+              <span className="flex items-center gap-3">
+                <span className="h-2 rounded-[2px] bg-foreground/20" style={{ width: `${Math.max(0.6, (it.ghost / max) * 100)}%` }} />
+                <span className="text-[12px] tabular-nums text-foreground/50">{it.ghost}</span>
+              </span>
+            )}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </figure>
+);
+
+/** Every font size found, as ticks on one ruler, against a closed scale */
+const TypeRuler = () => {
+  const MIN = 10;
+  const MAX = 94;
+  const x = (v: number) => `${((v - MIN) / (MAX - MIN)) * 100}%`;
+  const rows = [
+    { label: "Todo el ecosistema", n: SIZES_ALL.length, sizes: SIZES_ALL, tone: "bg-foreground" },
+    { label: "Solo nebrija.com", n: SIZES_MAIN.length, sizes: SIZES_MAIN, tone: "bg-foreground/60" },
+    { label: "Una escala cerrada", n: SIZES_IDEAL.length, sizes: SIZES_IDEAL, tone: "bg-foreground/30" },
+  ];
+  return (
+    <figure className="flex flex-col gap-5">
+      {rows.map((r) => (
+        <div key={r.label} className="grid grid-cols-1 md:grid-cols-[12rem_1fr] gap-2 md:gap-4 md:items-center">
+          <span className="text-[14px] text-foreground/70">
+            <span className="font-medium text-foreground tabular-nums">{r.n}</span> · {r.label}
+          </span>
+          <div className="relative h-10 border-b border-foreground/20">
+            {r.sizes.map((s) => (
+              <span key={s} title={`${s}px`} className={`absolute bottom-0 w-px ${r.tone}`} style={{ left: x(s), height: `${30 + ((s - MIN) / (MAX - MIN)) * 70}%` }} />
+            ))}
+          </div>
+        </div>
+      ))}
+      <div className="grid grid-cols-1 md:grid-cols-[12rem_1fr] gap-4">
+        <span className="hidden md:block" />
+        <div className="relative h-4 text-[12px] text-foreground/50 tabular-nums">
+          {[12, 16, 24, 40, 56, 80].map((v) => (
+            <span key={v} className="absolute -translate-x-1/2" style={{ left: x(v) }}>{v}px</span>
+          ))}
+        </div>
+      </div>
+      <figcaption className="text-[14px] text-foreground/60 max-w-[60ch]">
+        Cada línea es un tamaño de letra en uso. Muchos son decimales (12,28 px, 19,1 px, 50,75 px): tamaños calculados sobre la marcha, no elegidos.
+      </figcaption>
+    </figure>
+  );
+};
+
+/** Which sizes each heading level takes: the hierarchy, drawn */
+const HeadingPlot = () => {
+  const MAX = 80;
+  return (
+    <figure className="flex flex-col gap-4">
+      {HEADINGS_HOME.map((h) => (
+        <div key={h.tag} className="grid grid-cols-[3rem_1fr] items-center gap-4">
+          <span className="text-[14px] font-medium tabular-nums">{h.tag}</span>
+          <div className="relative h-12 border-b border-foreground/15">
+            {h.sizes.map((s) => (
+              <span key={s} className="absolute bottom-0 -translate-x-1/2 flex flex-col items-center gap-1" style={{ left: `${(s / MAX) * 100}%` }}>
+                <span className="text-[11px] tabular-nums text-foreground/60">{s}</span>
+                <span className="rounded-full bg-foreground" style={{ width: 6 + s / 6, height: 6 + s / 6 }} />
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+      <figcaption className="text-[14px] text-foreground/60 max-w-[60ch]">
+        Tamaños (en px) de cada nivel de título en la portada de nebrija.com. Un H3 y un H4 llegan a 76 px; el H1, el título principal, se queda en 40 px.
+      </figcaption>
+    </figure>
+  );
+};
+
+/** N phone screens, drawn as small rectangles */
+const Screens = ({ n, label, light = false }: { n: number; label: string; light?: boolean }) => (
+  <div className="flex flex-col gap-2">
+    <span className="text-[14px] text-foreground/70">
+      <span className="font-medium text-foreground tabular-nums">{n}</span> pantallas · {label}
+    </span>
+    <div className="flex flex-wrap gap-1">
+      {Array.from({ length: n }, (_, i) => (
+        <span key={i} className={`h-7 w-[14px] rounded-[3px] ${light ? "bg-foreground/20" : "bg-foreground"}`} />
+      ))}
+    </div>
+  </div>
+);
 
 // ——— Page ———
 
@@ -219,12 +374,12 @@ const NebrijaAudit = () => {
       </Helmet>
 
       {/* Reading progress */}
-      <div aria-hidden="true" className="fixed inset-x-0 top-0 z-[210] h-[2px] bg-transparent">
+      <div aria-hidden="true" className="print:hidden fixed inset-x-0 top-0 z-[210] h-[2px] bg-transparent">
         <div className="h-full bg-foreground origin-left" style={{ transform: `scaleX(${progress})` }} />
       </div>
 
       {/* The case pages' nav card */}
-      <nav aria-label="Informe" className="fixed left-3 top-3 z-[200] flex items-center gap-6 rounded-[4px] bg-white pl-4 pr-4 py-3 text-[14px] tracking-[0.01em]">
+      <nav aria-label="Informe" className="print:hidden fixed left-3 top-3 z-[200] flex items-center gap-6 rounded-[4px] bg-white pl-4 pr-4 py-3 text-[14px] tracking-[0.01em]">
         <Link to="/" className="font-medium text-foreground/70 transition-colors duration-300 hover:text-foreground">
           Jose Peláez
         </Link>
@@ -236,7 +391,7 @@ const NebrijaAudit = () => {
 
       {/* Phones: where you are, and the index one tap away */}
       <div
-        className={`lg:hidden fixed inset-x-3 bottom-3 z-[190] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${progress > 0.02 ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0 pointer-events-none"}`}
+        className={`print:hidden lg:hidden fixed inset-x-3 bottom-3 z-[190] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${progress > 0.02 ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0 pointer-events-none"}`}
       >
         <button
           type="button"
@@ -270,6 +425,7 @@ const NebrijaAudit = () => {
                   >
                     <span className="tabular-nums text-[14px] w-6">{num(s.id)}</span>
                     {s.label}
+                    {TAGS[s.id] && <span aria-hidden="true" className={`ml-auto self-center size-2 shrink-0 rounded-full ${STATE_LOOK[TAGS[s.id].state].dot}`} />}
                   </button>
                 </li>
               ))}
@@ -301,7 +457,7 @@ const NebrijaAudit = () => {
               </div>
             ))}
           </dl>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 print:hidden">
             <button
               type="button"
               onClick={() => go("resumen")}
@@ -320,9 +476,9 @@ const NebrijaAudit = () => {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 print:block">
         {/* Side index (wide screens) */}
-        <aside className="hidden lg:block lg:col-span-3 border-t border-r border-foreground/15">
+        <aside className="print:hidden hidden lg:block lg:col-span-3 border-t border-r border-foreground/15">
           <nav aria-label="Índice del informe" className="sticky top-0 max-h-screen overflow-y-auto px-3 pt-20 pb-10">
             <ol className="flex flex-col">
               {SECTIONS.map((s) => {
@@ -341,6 +497,7 @@ const NebrijaAudit = () => {
                       <span className={`h-px bg-foreground transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${on ? "w-5" : "w-0"}`} />
                       <span className="tabular-nums w-5">{num(s.id)}</span>
                       <span className="truncate">{s.label}</span>
+                      {TAGS[s.id] && <span aria-label={STATE_LABEL[TAGS[s.id].state]} className={`ml-auto size-1.5 shrink-0 rounded-full ${STATE_LOOK[TAGS[s.id].state].dot}`} />}
                     </a>
                   </li>
                 );
@@ -349,11 +506,11 @@ const NebrijaAudit = () => {
           </nav>
         </aside>
 
-        <main className="lg:col-span-9 min-w-0 pb-24 lg:pb-0">
+        <main className="lg:col-span-9 print:col-span-12 min-w-0 pb-24 lg:pb-0">
           <Section id="resumen" title="En 30 segundos" lead="Tres ideas para quien solo lea esto.">
             <ol className="grid gap-px bg-foreground/15 border-y border-foreground/15 md:grid-cols-3">
               {[
-                ["La marca no tiene un sistema.", "Siete logotipos, tres rojos y cinco plantillas web: cada unidad ha resuelto su propia versión de Nebrija."],
+                ["La marca no tiene un sistema.", "Siete logotipos, ocho rojos, 61 tamaños de letra y 19 estilos de botón: cada unidad ha resuelto su propia versión de Nebrija."],
                 ["Los mejores argumentos no se ven.", "Nº1 en inserción laboral y 94,2 % de empleo, a unos 3.000 px del inicio de la portada."],
                 ["Hay una base sólida.", "Datos excelentes, un logotipo con historia y una presentación institucional que demuestra que se puede hacer bien."],
               ].map(([t, d], i) => (
@@ -365,7 +522,17 @@ const NebrijaAudit = () => {
               ))}
             </ol>
             <div className="flex flex-col gap-4">
-              <Label>Valoración por áreas · toca una fila para ir a la sección</Label>
+              <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <Label>Valoración por áreas · toca una fila para ir a la sección</Label>
+                <div className="flex flex-wrap gap-2" aria-label="Leyenda">
+                  <Chip state="critico" />
+                  <Chip state="mejorable" />
+                  <Chip state="correcto" />
+                  <PriorityTag p={1} short />
+                  <PriorityTag p={2} short />
+                  <PriorityTag p={3} short />
+                </div>
+              </div>
               <ul className="border-y border-foreground/15">
                 {SCORE.map((r) => (
                   <li key={r.area} className="border-t border-foreground/10 first:border-t-0">
@@ -375,11 +542,14 @@ const NebrijaAudit = () => {
                         e.preventDefault();
                         go(r.to);
                       }}
-                      className="group grid grid-cols-[1fr_auto] md:grid-cols-[14rem_7rem_1fr_auto] items-center gap-x-6 gap-y-1 py-4"
+                      className="group grid grid-cols-[1fr_auto] md:grid-cols-[14rem_10rem_1fr_auto] items-center gap-x-6 gap-y-2 py-4"
                     >
                       <span className="text-[16px] font-medium text-foreground">{r.area}</span>
                       <span className="md:order-none order-first col-start-2 row-start-1 md:col-start-auto md:row-start-auto justify-self-end md:justify-self-start">
-                        <Chip state={r.state} />
+                        <span className="flex gap-1.5">
+                          <Chip state={r.state} />
+                          {TAGS[r.to]?.priority && <PriorityTag p={TAGS[r.to].priority!} short />}
+                        </span>
                       </span>
                       <span className="col-span-2 md:col-span-1 text-[15px] text-foreground/70">{r.finding}</span>
                       <span aria-hidden="true" className="hidden md:block text-foreground/40 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-foreground">
@@ -426,7 +596,7 @@ const NebrijaAudit = () => {
             />
           </Section>
 
-          <Section id="color" title="Color" lead="Tres rojos distintos para un solo color de marca.">
+          <Section id="color" title="Color" lead="Tres rojos principales para un solo color de marca.">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {REDS.map((r) => (
                 <div key={r.hex} className="flex flex-col overflow-hidden rounded-[10px] border border-foreground/10">
@@ -439,7 +609,7 @@ const NebrijaAudit = () => {
               ))}
             </div>
             <Body>
-              Medidos en el código de cada web. A ellos se suma un verde para «Inscripciones abiertas» que solo aparece en las fichas de grado. Por separado no se nota; juntos debilitan el único recurso que Nebrija usa en todas partes.
+              Los tres más usados, medidos en el código de cada web; en total hay ocho tonos de rojo (ver Sistema de diseño). A ellos se suma un verde para «Inscripciones abiertas» que solo aparece en las fichas de grado. Por separado no se nota; juntos debilitan el único recurso que Nebrija usa en todas partes.
             </Body>
             <Takeaway why="Un color constante es la forma más barata de ser reconocible." what="Un rojo único con su escala de apoyo y colores funcionales (avisos, estados) definidos en el sistema." />
           </Section>
@@ -462,6 +632,93 @@ const NebrijaAudit = () => {
               </div>
             </div>
             <Takeaway why="La tipografía es la voz de la marca. Con fuentes por defecto, Nebrija suena como cualquier plantilla." what="Una pareja tipográfica propia: una display que herede la serifa del logotipo y una sans de lectura, con una escala cerrada." />
+          </Section>
+
+          <Section id="sistema" title="Sistema de diseño" lead="Un inventario que no cabe en ningún sistema.">
+            <Body>
+              Hemos medido el estilo real de cada texto, caja y botón visibles en 13 páginas: siete de nebrija.com y las portadas de la Business School, FP, Lenguas Modernas, Competencias, Actos y admisiones. Un sistema de diseño ordenado suele trabajar con unos 8 tamaños de letra, 2 o 3 pesos, un color principal y 3 o 4 estilos de botón.
+            </Body>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {DS_STATS.map((f) => (
+                <div key={f.label} className="rounded-[4px] bg-[#f5f5f5] px-5 py-5 flex flex-col gap-1.5">
+                  <span className="font-display font-normal leading-[1] tracking-[-0.02em] text-[32px] md:text-[44px] tabular-nums">{f.value}</span>
+                  <span className="text-[14px] text-foreground/60">{f.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-5 pt-4">
+              <h3 className="font-display text-[22px] leading-[1.2] tracking-[-0.01em]">Tamaños de letra</h3>
+              <TypeRuler />
+            </div>
+
+            <div className="flex flex-col gap-5 pt-4">
+              <h3 className="font-display text-[22px] leading-[1.2] tracking-[-0.01em]">Cada web, sus propias reglas</h3>
+              <Bars
+                legend={["Tamaños de letra", "Interlineados"]}
+                max={26}
+                items={PER_SITE.map((p) => ({ label: p.site, value: p.sizes, ghost: p.lh, strong: p.sizes > 12 ? true : undefined }))}
+              />
+              <p className="text-[14px] text-foreground/60 max-w-[60ch]">
+                nebrija.com está más contenida por sí sola: 10 tamaños en siete páginas. El desorden aparece al sumar el resto: FP usa 26 tamaños y 21 interlineados en una sola portada.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-5 pt-4">
+              <h3 className="font-display text-[22px] leading-[1.2] tracking-[-0.01em]">Una jerarquía al revés</h3>
+              <HeadingPlot />
+              <p className="text-[14px] text-foreground/60 max-w-[60ch]">
+                En Lenguas Modernas, el título de segundo nivel aparece en seis tamaños distintos. En Actos hay doce títulos principales por página, usados como etiquetas de filtros. Para un buscador o un lector de pantalla, la estructura de la página no tiene sentido.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-5 pt-4">
+              <h3 className="font-display text-[22px] leading-[1.2] tracking-[-0.01em]">Botones</h3>
+              <Figure shot={SHOTS.botones} onOpen={setOpen} />
+              <Figure shot={SHOTS.admision} onOpen={setOpen} />
+            </div>
+
+            <div className="flex flex-col gap-5 pt-4">
+              <h3 className="font-display text-[22px] leading-[1.2] tracking-[-0.01em]">Color</h3>
+              <div className="flex flex-col gap-2">
+                <Label>8 tonos de rojo</Label>
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-1">
+                  {REDS_ALL.map((c) => (
+                    <div key={c} className="flex flex-col gap-1.5">
+                      <span className="block h-16 rounded-[4px]" style={{ background: c }} />
+                      <code className="font-mono text-[11px] text-foreground/60">{c}</code>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label>19 tonos de gris</Label>
+                <div className="flex h-12 overflow-hidden rounded-[4px] border border-foreground/10">
+                  {GREYS_ALL.map((c) => (
+                    <span key={c} title={c} className="flex-1" style={{ background: c }} />
+                  ))}
+                </div>
+                <p className="text-[13px] text-foreground/50">Del #111111 al #F1F2F3, muchos casi idénticos entre sí (#191919, #1F1D1B, #212529, #222222).</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-5 pt-4">
+              <h3 className="font-display text-[22px] leading-[1.2] tracking-[-0.01em]">17 radios de esquina</h3>
+              <div className="grid grid-cols-6 sm:grid-cols-9 gap-2">
+                {RADII.map((r) => (
+                  <div key={r} className="flex flex-col items-center gap-1.5">
+                    <span className="block aspect-square w-full max-w-[64px] border-2 border-foreground" style={{ borderRadius: r === "50%" ? "50%" : r }} />
+                    <span className="text-[11px] tabular-nums text-foreground/60">{r}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[14px] text-foreground/60 max-w-[60ch]">Desde esquinas casi rectas de 3 px hasta pastillas de 60 px y círculos. A esto se suman 7 sombras distintas y tres sistemas de iconos.</p>
+            </div>
+
+            <Takeaway
+              why="Sin un sistema, cada página se diseña desde cero: más coste, más tiempo y una marca que nunca termina de parecerse a sí misma."
+              what="Un sistema de diseño con una escala tipográfica cerrada, un color principal con su paleta, tres estilos de botón y componentes compartidos por todas las webs."
+            />
           </Section>
 
           <Section id="fotografia" title="Fotografía e iconografía" lead="Sin dirección de arte.">
@@ -500,6 +757,11 @@ const NebrijaAudit = () => {
             <Body>
               La mayoría de futuros estudiantes llega desde el móvil. En un iPhone 13 la portada de nebrija.com mide unos 21.700 px y la de FP, unas 23 pantallas.
             </Body>
+            <div className="flex flex-col gap-5 rounded-[10px] bg-[#f5f5f5] p-5 md:p-8">
+              <Screens n={26} label="portada de nebrija.com" />
+              <Screens n={23} label="portada de fpnebrija.com" />
+              <Screens n={6} label="una portada de móvil razonable" light />
+            </div>
             <div className="grid grid-cols-2 gap-2 max-w-[640px]">
               <Figure shot={SHOTS.movilHome} onOpen={setOpen} tall />
               <Figure shot={SHOTS.movilFp} onOpen={setOpen} tall />
@@ -533,6 +795,29 @@ const NebrijaAudit = () => {
                 </li>
               ))}
             </ul>
+            <div className="grid gap-10 md:grid-cols-2">
+              <div className="flex flex-col gap-4">
+                <Label>Peso de cada portada (MB)</Label>
+                <Bars
+                  max={17}
+                  items={TECH.map((r) => {
+                    const mb = parseFloat(r.weight.replace("≈", "").replace(",", "."));
+                    return { label: r.page, value: mb, display: r.weight, strong: mb > 10 ? true : false };
+                  })}
+                />
+              </div>
+              <div className="flex flex-col gap-4">
+                <Label>Imágenes sin texto alternativo (%)</Label>
+                <Bars
+                  max={100}
+                  items={TECH.map((r) => {
+                    const [a, b] = r.alt.split(" de ").map(Number);
+                    const pct = Math.round((a / b) * 100);
+                    return { label: r.page, value: pct, display: `${pct} %`, strong: pct >= 50 ? true : false };
+                  })}
+                />
+              </div>
+            </div>
             <details className="group border-y border-foreground/15">
               <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-[15px] font-medium [&::-webkit-details-marker]:hidden">
                 Ver la medición completa
@@ -568,6 +853,26 @@ const NebrijaAudit = () => {
           </Section>
 
           <Section id="redes" title="Redes sociales" lead="Comunidad grande, poco alcance.">
+            <div className="grid gap-10 md:grid-cols-2">
+              <div className="flex flex-col gap-4">
+                <Label>Seguidores por canal</Label>
+                <Bars
+                  max={65100}
+                  items={SOCIAL.map((s) => ({ label: s.channel, value: Number(s.followers.replace(".", "")), display: s.followers, strong: Number(s.followers.replace(".", "")) > 20000 ? true : false }))}
+                />
+              </div>
+              <div className="flex flex-col gap-4">
+                <Label>La comunidad en Instagram, frente a la propia</Label>
+                <Bars
+                  max={83000}
+                  items={[
+                    { label: "Estudiantes + antiguos alumnos", value: 82956, display: "≈83.000", strong: false },
+                    { label: "Seguidores en Instagram", value: 65100, display: "65.100", strong: true },
+                  ]}
+                />
+                <p className="text-[13px] text-foreground/50">Aunque no todos los seguidores sean alumnos, el tamaño de la comunidad es menor que el de la propia universidad.</p>
+              </div>
+            </div>
             <Rows head={["Canal", "Seguidores", "Actividad", "Observación"]} rows={SOCIAL.map((s) => [s.channel, <span key="f" className="tabular-nums">{s.followers}</span>, s.activity, s.note])} />
             <Body>
               Instagram tiene 65.100 seguidores y Nebrija, más de 68.000 antiguos alumnos y casi 15.000 estudiantes. Las redes hablan sobre todo a quien ya conoce la universidad. El contenido documenta eventos, cada uno con su propio grafismo, en lugar de construir una imagen reconocible.
@@ -612,10 +917,13 @@ const NebrijaAudit = () => {
             <div className="flex flex-col gap-4">
               <Label>Mejoras rápidas, antes del rediseño</Label>
               <ul className="grid gap-2 md:grid-cols-2">
-                {QUICK_WINS.map((q) => (
-                  <li key={q} className="flex gap-3 text-[16px] leading-[1.55]">
-                    <span aria-hidden="true" className="mt-[0.55em] size-1.5 shrink-0 rounded-full bg-foreground" />
-                    {q}
+                {QUICK_WINS_TAGGED.map((q) => (
+                  <li key={q.text} className="flex flex-col gap-3 rounded-[10px] border border-foreground/10 p-5">
+                    <div className="flex flex-wrap gap-1.5">
+                      <PriorityTag p={q.priority} />
+                      <Tag>{q.effort}</Tag>
+                    </div>
+                    <span className="text-[16px] leading-[1.5]">{q.text}</span>
                   </li>
                 ))}
               </ul>
