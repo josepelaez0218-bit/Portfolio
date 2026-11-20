@@ -146,16 +146,18 @@ const Figure = ({ shot, onOpen, className = "", tall = false }: { shot: Shot; on
 const Section = ({ id, title, lead, children }: { id: string; title: string; lead?: string; children?: ReactNode }) => (
   <section id={id} data-audit-section className="scroll-mt-20 lg:scroll-mt-6 border-t border-foreground/15 px-3 lg:px-10 py-16 md:py-24 flex flex-col gap-10">
     <header className="flex flex-col gap-5">
-      <div className="flex items-baseline gap-4">
-        <span className="text-[14px] text-foreground/60 tabular-nums">{num(id)}</span>
-        <h2 className="font-display font-normal leading-[1.1] tracking-[-0.02em] text-[28px] md:text-[40px] text-balance">{title}</h2>
-      </div>
-      {TAGS[id] && (
-        <div className="flex flex-wrap gap-2">
-          <Chip state={TAGS[id].state} />
-          {TAGS[id].priority && <PriorityTag p={TAGS[id].priority!} />}
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <div className="flex items-baseline gap-4 min-w-0">
+          <span className="text-[14px] text-foreground/60 tabular-nums">{num(id)}</span>
+          <h2 className="font-display font-normal leading-[1.1] tracking-[-0.02em] text-[28px] md:text-[40px] text-balance">{title}</h2>
         </div>
-      )}
+        {TAGS[id] && (
+          <div className="flex flex-wrap gap-2 md:pt-2.5 ml-auto">
+            <Chip state={TAGS[id].state} />
+            {TAGS[id].priority && <PriorityTag p={TAGS[id].priority!} />}
+          </div>
+        )}
+      </div>
       {lead && <p className="text-lead text-foreground max-w-[40ch] text-balance">{lead}</p>}
     </header>
     {children}
@@ -496,7 +498,6 @@ const NebrijaAudit = () => {
                   >
                     <span className="tabular-nums text-[14px] w-6">{num(s.id)}</span>
                     {s.label}
-                    {TAGS[s.id] && <span aria-hidden="true" className={`ml-auto self-center size-2 shrink-0 rounded-full ${STATE_LOOK[TAGS[s.id].state].dot}`} />}
                   </button>
                 </li>
               ))}
@@ -569,7 +570,6 @@ const NebrijaAudit = () => {
                       <span className={`h-px bg-foreground transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${on ? "w-5" : "w-0"}`} />
                       <span className="tabular-nums w-5">{num(s.id)}</span>
                       <span className="truncate">{s.label}</span>
-                      {TAGS[s.id] && <span aria-label={STATE_LABEL[TAGS[s.id].state]} className={`ml-auto size-1.5 shrink-0 rounded-full ${STATE_LOOK[TAGS[s.id].state].dot}`} />}
                     </a>
                   </li>
                 );
