@@ -231,15 +231,26 @@ export const FAMILIES = [
 
 export const WEIGHTS = [100, 300, 400, 500, 700, 900];
 
-// ——— Expected impact: industry studies, cited, never a forecast for Nebrija
+// ——— Expected improvement per action: estimates derived from cited industry
+// studies, with how each was worked out and how reliable it is. Never a
+// promise for Nebrija; the diagnosis phase would set the real baseline.
+export type Confidence = "alta" | "media" | "baja" | "medir";
+export const CONFIDENCE_LABEL: Record<Confidence, string> = {
+  alta: "Fiabilidad alta",
+  media: "Fiabilidad media",
+  baja: "Fiabilidad baja",
+  medir: "Sin dato fiable",
+};
+
 export const IMPACT: {
   action: string;
   to: string;
   priority: Priority;
   improves: string;
-  figure: string;
+  gain: string;
   unit: string;
-  claim: string;
+  basis: string;
+  confidence: Confidence;
   source: string;
   url: string;
   measure: string;
@@ -249,9 +260,10 @@ export const IMPACT: {
     to: "movil",
     priority: 1,
     improves: "Conversión",
-    figure: "+8,4 %",
-    unit: "de conversiones",
-    claim: "con solo una décima de segundo menos de carga en el móvil (sector retail; +10,1 % en viajes).",
+    gain: "+8–10 %",
+    unit: "de conversiones en móvil por cada 0,1 s ganada",
+    basis: "Deloitte y Google midieron +8,4 % de conversiones en retail y +10,1 % en viajes por cada décima de segundo menos de carga en el móvil.",
+    confidence: "media",
     source: "Deloitte y Google, Milliseconds Make Millions, 2020",
     url: "https://www.deloitte.com/ie/en/services/consulting/research/milliseconds-make-millions.html",
     measure: "Conversión a solicitud de información desde móvil",
@@ -261,9 +273,10 @@ export const IMPACT: {
     to: "tecnica",
     priority: 1,
     improves: "Conversión · quedarse",
-    figure: "+32 %",
+    gain: "hasta −24 %",
     unit: "de abandono",
-    claim: "si la página tarda 3 segundos en cargar en lugar de 1. Aligerar la portada evita perder esas visitas antes de que lleguen a ver nada.",
+    basis: "Pasar de 1 a 3 segundos de carga sube el abandono un 32 % (Google/SOASTA). Hacer el camino inverso, de 3 a 1 segundo, lo reduce hasta un 24 %.",
+    confidence: "media",
     source: "Google / SOASTA, 2017",
     url: "https://thinkwithgoogle.com/intl/en-gb/mobile-page-speed-data",
     measure: "Tasa de rebote en móvil, tiempo de carga",
@@ -273,9 +286,10 @@ export const IMPACT: {
     to: "web",
     priority: 1,
     improves: "Conversión · convencer",
-    figure: "64 %",
-    unit: "de los estudiantes",
-    claim: "de último curso usa la web de la universidad como su principal fuente de información, por delante de buscadores y familia.",
+    gain: "A medir",
+    unit: "con un test A/B",
+    basis: "No hay una cifra universal fiable para el impacto de un mensaje. Sí sabemos dónde pesa: el 64 % de los estudiantes usa la web de la universidad como su principal fuente de información (Carnegie, 2025).",
+    confidence: "medir",
     source: "Carnegie Higher Ed, encuesta a 3.400 estudiantes y familias, 2025",
     url: "https://www.carnegiehighered.com/research-series-what-drives-college-choice/",
     measure: "Solicitudes de información por visita, clics hacia admisión",
@@ -285,9 +299,10 @@ export const IMPACT: {
     to: "sistema",
     priority: 1,
     improves: "Conversión · confianza",
-    figure: "+10–33 %",
+    gain: "+10–20 %",
     unit: "de ingresos",
-    claim: "declaran las organizaciones que presentan su marca de forma consistente en todos los canales.",
+    basis: "El 68 % de los responsables de marketing declara entre un 10 y un 20 % más de ingresos con una marca consistente; el máximo citado llega al 33 %. Es una encuesta autodeclarada, por eso la fiabilidad es baja.",
+    confidence: "baja",
     source: "Lucidpress (Marq), State of Brand Consistency, 2019 y 2021",
     url: "https://prnewswire.com/news-releases/study-finds-companies-with-consistent-branding-can-see-up-to-33-increase-in-revenue-300967219.html",
     measure: "Búsquedas de marca, recuerdo de marca en encuestas a candidatos",
@@ -297,10 +312,11 @@ export const IMPACT: {
     to: "tecnica",
     priority: 2,
     improves: "Captación · llegar",
-    figure: "+6 %",
-    unit: "de clics",
-    claim: "reciben los resultados de Google con meta descripción frente a los que no la tienen.",
-    source: "Backlinko y ClickFlow, análisis de 5 millones de resultados, 2019",
+    gain: "≈+6 %",
+    unit: "de clics desde Google en las páginas corregidas",
+    basis: "Un análisis de 5 millones de resultados de búsqueda encontró un 5,8 % más de clics en los resultados con meta descripción.",
+    confidence: "media",
+    source: "Backlinko y ClickFlow, 2019",
     url: "https://www.newswire.com/news/the-1-result-in-google-gets-31-7-of-clicks-new-study-by-backlinko-and-20976010",
     measure: "CTR orgánico en Google Search Console",
   },
@@ -308,10 +324,11 @@ export const IMPACT: {
     action: "Texto alternativo en las imágenes",
     to: "tecnica",
     priority: 2,
-    improves: "Captación · llegar",
-    figure: "60 %",
-    unit: "sin texto alternativo",
-    claim: "de las imágenes de la ficha de grado de Nebrija, frente al 18,5 % de media en el millón de webs más visitadas.",
+    improves: "Captación · accesibilidad",
+    gain: "60 % → 0 %",
+    unit: "de imágenes sin descripción",
+    basis: "Es una medición directa: hoy el 60 % de las imágenes de la ficha de grado no tiene texto alternativo (la media en las webs más visitadas es 18,5 %). Mejora la accesibilidad y la presencia en Google Imágenes.",
+    confidence: "alta",
     source: "WebAIM Million, 2025 (media); medición propia (Nebrija)",
     url: "https://webaim.org/projects/million/2025",
     measure: "Errores WCAG, tráfico desde Google Imágenes",

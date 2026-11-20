@@ -23,6 +23,7 @@ import {
   STATE_LABEL,
   TECH,
   UNITS,
+  CONFIDENCE_LABEL,
   FAMILIES,
   FUNNEL,
   IMPACT,
@@ -31,6 +32,7 @@ import {
   WEIGHTS,
   QUICK_WINS_TAGGED,
   TAGS,
+  type Confidence,
   type Priority,
   type Shot,
   type State,
@@ -191,6 +193,17 @@ const Rows = ({ head, rows }: { head: string[]; rows: ReactNode[][] }) => {
     </div>
   );
 };
+
+const CONF_LOOK: Record<Confidence, string> = {
+  alta: "bg-[#E8F6EE] text-[#067647]",
+  media: "bg-[#FEF4E6] text-[#A15C07]",
+  baja: "bg-foreground/[0.06] text-foreground/60",
+  medir: "border border-foreground/20 text-foreground/70",
+};
+
+const ConfidenceTag = ({ c }: { c: Confidence }) => (
+  <span className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-[12px] font-medium tracking-[0.01em] ${CONF_LOOK[c]}`}>{CONFIDENCE_LABEL[c]}</span>
+);
 
 // ——— Charts (plain HTML, drawn to scale from the data) ———
 
@@ -1024,9 +1037,9 @@ const NebrijaAudit = () => {
             </div>
           </Section>
 
-          <Section id="impacto" title="Impacto esperado" lead="Más solicitudes desde la misma web: qué mejora cada acción.">
+          <Section id="impacto" title="Impacto esperado" lead="Cuánto podría mejorar cada acción.">
             <Body>
-              Cada paso del embudo pierde candidatos. Las cifras siguientes son de estudios publicados, no una previsión para Nebrija: sirven para dimensionar lo que está en juego. La fase de diagnóstico fijaría la línea de partida con vuestros datos y mediría cada mejora.
+              Cada paso del embudo pierde candidatos. Debajo, el margen de mejora estimado de cada acción, calculado a partir de estudios del sector y con su nivel de fiabilidad. No son una promesa: el resultado real depende del punto de partida de Nebrija, que la fase de diagnóstico mediría con vuestros datos.
             </Body>
             <figure className="flex flex-col gap-4">
               {/* The admissions journey: four steps on one line (a timeline with
@@ -1073,11 +1086,18 @@ const NebrijaAudit = () => {
                     <span className="text-[13px] font-medium text-foreground/60">{it.improves}</span>
                     <PriorityTag p={it.priority} short />
                   </div>
-                  <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="font-display font-normal leading-[0.95] tracking-[-0.03em] text-[clamp(2.75rem,5vw,4.5rem)] tabular-nums text-[var(--chart)]">{it.figure}</span>
-                    <span className="font-display text-[20px] md:text-[24px] leading-[1.1] tracking-[-0.01em] text-[var(--chart)]">{it.unit}</span>
-                  </span>
-                  <p className="text-[15px] leading-[1.55] text-foreground/80">{it.claim}</p>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[13px] text-foreground/60">Margen de mejora estimado</span>
+                    <span className="font-display font-normal leading-[0.95] tracking-[-0.03em] text-[clamp(2.75rem,5vw,4.5rem)] tabular-nums text-[var(--chart)]">{it.gain}</span>
+                    <span className="font-display text-[20px] leading-[1.2] tracking-[-0.01em] text-[var(--chart)]">{it.unit}</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[13px] font-medium text-foreground">Cómo lo calculamos</span>
+                      <ConfidenceTag c={it.confidence} />
+                    </div>
+                    <p className="text-[14px] leading-[1.55] text-foreground/70">{it.basis}</p>
+                  </div>
                   <div className="mt-auto flex flex-col gap-3 border-t border-foreground/10 pt-4">
                     <a
                       href={`#${it.to}`}
