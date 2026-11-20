@@ -198,3 +198,35 @@ export const QUICK_WINS_TAGGED: { text: string; priority: Priority; effort: "Esf
   { text: "Añadir texto alternativo a las imágenes.", priority: 2, effort: "Esfuerzo medio" },
   { text: "Diseñar portadas para las historias destacadas de Instagram.", priority: 3, effort: "Esfuerzo bajo" },
 ];
+
+// ——— Typography, measured per site: [size in px, how many text elements use it]
+export type SizeUse = [number, number];
+export const TYPE_SITES: { id: string; site: string; family: string; css: string; sizes: SizeUse[]; ideal?: boolean }[] = [
+  {
+    id: "fp", site: "Instituto FP", family: "Roboto", css: "Roboto, sans-serif",
+    sizes: [[12.24, 36], [12.28, 4], [13.6, 3], [14.79, 1], [15.13, 4], [16.15, 3], [17, 40], [18.52, 4], [18.7, 40], [20.4, 29], [21.25, 14], [22.1, 26], [22.31, 2], [25.5, 3], [26.01, 2], [28.05, 4], [29.75, 8], [30.45, 2], [34, 33], [35.19, 1], [37.21, 1], [42.5, 1], [50.74, 1], [53.55, 1], [57.38, 1], [76.5, 7]],
+  },
+  {
+    id: "idiomas", site: "Lenguas Modernas", family: "Arial MT Pro", css: "Arial, Helvetica, sans-serif",
+    sizes: [[13.6, 4], [16, 2], [17.6, 7], [18.4, 12], [19.1, 2], [22, 1], [22.08, 1], [24.2, 1], [24.96, 3], [25.44, 4], [26.46, 3], [33.43, 1], [34.56, 2], [34.85, 4], [38.4, 2], [46.08, 7], [47.76, 1], [76.8, 3]],
+  },
+  {
+    id: "competencias", site: "Competencias", family: "Roboto", css: "Roboto, sans-serif",
+    sizes: [[13.9, 1], [14.45, 3], [16.15, 4], [17, 6], [18.7, 16], [19.55, 6], [22, 1], [28.9, 1], [34.56, 2], [40.8, 11], [91.8, 3]],
+  },
+  {
+    id: "main", site: "nebrija.com", family: "Roboto", css: "Roboto, sans-serif",
+    sizes: [[12, 454], [14, 270], [16, 100], [18, 598], [20, 33], [24, 17], [28, 259], [40, 114], [56, 19], [76, 15]],
+  },
+  {
+    id: "ideal", site: "Una escala cerrada", family: "Ejemplo", css: "Inter, sans-serif", ideal: true,
+    sizes: [[12, 0], [14, 0], [16, 0], [20, 0], [28, 0], [40, 0], [56, 0], [80, 0]],
+  },
+];
+
+export const FAMILIES = [
+  { name: "Roboto", css: "Roboto, sans-serif", uses: "2.544", where: "nebrija.com, Business School, FP, Competencias y Actos", note: "La fuente por defecto de Android y de Google." },
+  { name: "Arial MT Pro", css: "Arial, Helvetica, sans-serif", uses: "63", where: "Lenguas Modernas y portal de admisiones, en tres cortes: Light, Regular y Condensed Bold", note: "Una versión de Arial, la fuente por defecto de Windows." },
+];
+
+export const WEIGHTS = [100, 300, 400, 500, 700, 900];

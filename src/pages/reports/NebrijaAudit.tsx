@@ -23,7 +23,10 @@ import {
   STATE_LABEL,
   TECH,
   UNITS,
+  FAMILIES,
   PRIORITY_LABEL,
+  TYPE_SITES,
+  WEIGHTS,
   QUICK_WINS_TAGGED,
   TAGS,
   type Priority,
@@ -62,7 +65,6 @@ const SECTIONS = [
 
 const num = (id: string) => String(SECTIONS.findIndex((s) => s.id === id) + 1).padStart(2, "0");
 
-const PDF = `${IMG}/auditoria-marca-nebrija.pdf`;
 
 // ——— Small pieces ———
 
@@ -202,8 +204,8 @@ const Bars = ({
   <figure className="flex flex-col gap-3">
     {legend && (
       <div className="flex flex-wrap gap-5 text-[13px] text-foreground/60">
-        <span className="flex items-center gap-2"><i className="inline-block size-2.5 rounded-[2px] bg-foreground" />{legend[0]}</span>
-        <span className="flex items-center gap-2"><i className="inline-block size-2.5 rounded-[2px] bg-foreground/20" />{legend[1]}</span>
+        <span className="flex items-center gap-2"><i className="inline-block size-2.5 rounded-[2px] bg-[var(--chart)]" />{legend[0]}</span>
+        <span className="flex items-center gap-2"><i className="inline-block size-2.5 rounded-[2px] bg-[var(--chart-soft)]" />{legend[1]}</span>
       </div>
     )}
     <ul className="flex flex-col gap-3">
@@ -212,12 +214,12 @@ const Bars = ({
           <span className={`text-[14px] leading-[1.3] ${it.strong ? "font-medium text-foreground" : "text-foreground/70"}`}>{it.label}</span>
           <span className="flex flex-col gap-1">
             <span className="flex items-center gap-3">
-              <span className={`h-3 rounded-[2px] ${it.strong === false ? "bg-foreground/40" : "bg-foreground"}`} style={{ width: `${Math.max(0.6, (it.value / max) * 100)}%` }} />
+              <span className={`h-3 rounded-[2px] ${it.strong === false ? "bg-[var(--chart-mid)]" : "bg-[var(--chart)]"}`} style={{ width: `${Math.max(0.6, (it.value / max) * 100)}%` }} />
               <span className="text-[14px] tabular-nums whitespace-nowrap">{it.display ?? `${it.value}${unit}`}</span>
             </span>
             {it.ghost !== undefined && (
               <span className="flex items-center gap-3">
-                <span className="h-2 rounded-[2px] bg-foreground/20" style={{ width: `${Math.max(0.6, (it.ghost / max) * 100)}%` }} />
+                <span className="h-2 rounded-[2px] bg-[var(--chart-soft)]" style={{ width: `${Math.max(0.6, (it.ghost / max) * 100)}%` }} />
                 <span className="text-[12px] tabular-nums text-foreground/50">{it.ghost}</span>
               </span>
             )}
@@ -234,9 +236,9 @@ const TypeRuler = () => {
   const MAX = 94;
   const x = (v: number) => `${((v - MIN) / (MAX - MIN)) * 100}%`;
   const rows = [
-    { label: "Todo el ecosistema", n: SIZES_ALL.length, sizes: SIZES_ALL, tone: "bg-foreground" },
-    { label: "Solo nebrija.com", n: SIZES_MAIN.length, sizes: SIZES_MAIN, tone: "bg-foreground/60" },
-    { label: "Una escala cerrada", n: SIZES_IDEAL.length, sizes: SIZES_IDEAL, tone: "bg-foreground/30" },
+    { label: "Todo el ecosistema", n: SIZES_ALL.length, sizes: SIZES_ALL, tone: "bg-[var(--chart)]" },
+    { label: "Solo nebrija.com", n: SIZES_MAIN.length, sizes: SIZES_MAIN, tone: "bg-[var(--chart-mid)]" },
+    { label: "Una escala cerrada", n: SIZES_IDEAL.length, sizes: SIZES_IDEAL, tone: "bg-foreground/25" },
   ];
   return (
     <figure className="flex flex-col gap-5">
@@ -279,7 +281,7 @@ const HeadingPlot = () => {
             {h.sizes.map((s) => (
               <span key={s} className="absolute bottom-0 -translate-x-1/2 flex flex-col items-center gap-1" style={{ left: `${(s / MAX) * 100}%` }}>
                 <span className="text-[11px] tabular-nums text-foreground/60">{s}</span>
-                <span className="rounded-full bg-foreground" style={{ width: 6 + s / 6, height: 6 + s / 6 }} />
+                <span className="rounded-full bg-[var(--chart)]" style={{ width: 6 + s / 6, height: 6 + s / 6 }} />
               </span>
             ))}
           </div>
@@ -300,10 +302,81 @@ const Screens = ({ n, label, light = false }: { n: number; label: string; light?
     </span>
     <div className="flex flex-wrap gap-1">
       {Array.from({ length: n }, (_, i) => (
-        <span key={i} className={`h-7 w-[14px] rounded-[3px] ${light ? "bg-foreground/20" : "bg-foreground"}`} />
+        <span key={i} className={`h-7 w-[14px] rounded-[3px] ${light ? "bg-[var(--chart-soft)]" : "bg-[var(--chart)]"}`} />
       ))}
     </div>
   </div>
+);
+
+
+/** Every size a site uses, rendered: the sample word at each size, and how often it appears */
+const Waterfall = () => {
+  const [id, setId] = useState(TYPE_SITES[0].id);
+  const site = TYPE_SITES.find((t) => t.id === id)!;
+  const maxUse = Math.max(...site.sizes.map(([, n]) => n), 1);
+  const once = site.sizes.filter(([, n]) => n === 1).length;
+  const decimals = site.sizes.filter(([s]) => !Number.isInteger(s)).length;
+  return (
+    <figure className="flex flex-col gap-5">
+      <div role="tablist" aria-label="Elegir web" className="flex flex-wrap gap-2">
+        {TYPE_SITES.map((t) => (
+          <button
+            key={t.id}
+            role="tab"
+            type="button"
+            aria-selected={t.id === id}
+            onClick={() => setId(t.id)}
+            className={`rounded-full px-4 py-2 text-[14px] tracking-[0.01em] transition-colors duration-300 ${t.id === id ? "bg-[var(--chart)] text-white" : "bg-[#f5f5f5] text-foreground/70 hover:text-foreground"}`}
+          >
+            {t.site} <span className="tabular-nums opacity-70">· {t.sizes.length}</span>
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-x-8 gap-y-2 text-[14px] text-foreground/70">
+        <span><span className="font-medium text-foreground tabular-nums">{site.sizes.length}</span> tamaños</span>
+        {!site.ideal && <span><span className="font-medium text-foreground tabular-nums">{decimals}</span> con decimales</span>}
+        {!site.ideal && <span><span className="font-medium text-foreground tabular-nums">{once}</span> usados una sola vez</span>}
+        <span>Familia: <span className="font-medium text-foreground">{site.family}</span></span>
+      </div>
+      <div className="rounded-[10px] border border-foreground/10 overflow-hidden">
+        {site.sizes.map(([size, n]) => (
+          <div key={size} className="grid grid-cols-[4.5rem_1fr] md:grid-cols-[5rem_1fr_9rem] items-center gap-x-4 border-t border-foreground/10 first:border-t-0 px-4 py-2">
+            <span className={`text-[13px] tabular-nums ${Number.isInteger(size) ? "text-foreground/60" : "text-[#A15C07] font-medium"}`}>{String(size).replace(".", ",")} px</span>
+            <span className="min-w-0 overflow-hidden whitespace-nowrap leading-[1.15] text-foreground" style={{ fontSize: size, fontFamily: site.css, fontWeight: size > 30 ? 700 : 400 }}>
+              Universidad Nebrija
+            </span>
+            {!site.ideal && (
+              <span className="hidden md:flex items-center gap-2 justify-end">
+                {n === 1 && <span className="rounded-full bg-[#FEF4E6] px-2 py-0.5 text-[11px] font-medium text-[#A15C07]">1 uso</span>}
+                <span className="h-2 rounded-[2px] bg-[var(--chart)]" style={{ width: `${Math.max(4, (n / maxUse) * 64)}px` }} />
+                <span className="w-8 text-right text-[12px] tabular-nums text-foreground/60">{n}</span>
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+      <figcaption className="text-[14px] text-foreground/60 max-w-[62ch]">
+        {site.ideal
+          ? "Una escala cerrada: ocho tamaños con saltos claros, elegidos una vez y reutilizados en todas las páginas."
+          : "Cada fila es un tamaño de letra que aparece en la portada, con el número de textos que lo usan. En ámbar, los tamaños con decimales: calculados al vuelo, no elegidos."}
+      </figcaption>
+    </figure>
+  );
+};
+
+/** The six weights in use, from 100 to 900 */
+const WeightStrip = () => (
+  <figure className="flex flex-col gap-3">
+    <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+      {WEIGHTS.map((w) => (
+        <div key={w} className="rounded-[10px] bg-[#f5f5f5] px-4 py-5 flex flex-col gap-2">
+          <span className="text-[44px] leading-none" style={{ fontFamily: "Roboto, sans-serif", fontWeight: w }}>Aa</span>
+          <span className="text-[13px] tabular-nums text-foreground/60">{w}</span>
+        </div>
+      ))}
+    </div>
+    <figcaption className="text-[14px] text-foreground/60">Seis pesos en uso, de Thin (100) a Black (900). Con tres bastaría.</figcaption>
+  </figure>
 );
 
 // ——— Page ———
@@ -362,11 +435,12 @@ const NebrijaAudit = () => {
   const activeLabel = SECTIONS.find((s) => s.id === active)?.label ?? "";
 
   return (
-    <>
+    <div style={{ "--chart": "#2B4CFF", "--chart-mid": "#8FA2FF", "--chart-soft": "#DCE3FF" } as React.CSSProperties}>
       <Helmet>
         <html lang="es" />
         <title>Auditoría de marca · Universidad Nebrija — Jose Peláez</title>
         <meta name="robots" content="noindex, nofollow, noarchive" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap" />
         <meta name="description" content="Auditoría de la marca y la presencia digital de la Universidad Nebrija, por Jose Peláez." />
         <meta property="og:title" content="Auditoría de marca · Universidad Nebrija" />
         <meta property="og:description" content="Web, institutos y redes: qué no encaja, por qué importa y cómo construir una marca a la altura de sus datos." />
@@ -384,9 +458,6 @@ const NebrijaAudit = () => {
           Jose Peláez
         </Link>
         <span className="text-foreground hidden sm:inline">Auditoría · Nebrija</span>
-        <a href={PDF} download className="text-foreground/70 hover:text-foreground transition-colors duration-300 underline underline-offset-4 decoration-foreground/30">
-          PDF
-        </a>
       </nav>
 
       {/* Phones: where you are, and the index one tap away */}
@@ -465,13 +536,6 @@ const NebrijaAudit = () => {
             >
               Empezar por el resumen <span aria-hidden="true">↓</span>
             </button>
-            <a
-              href={PDF}
-              download
-              className="inline-flex items-center gap-3 rounded-full border border-foreground/20 px-6 py-3.5 text-[14px] font-medium tracking-[0.01em] transition-colors duration-300 hover:border-foreground"
-            >
-              Descargar PDF
-            </a>
           </div>
         </div>
       </header>
@@ -615,23 +679,40 @@ const NebrijaAudit = () => {
           </Section>
 
           <Section id="tipografia" title="Tipografía" lead="Fuentes por defecto y una serifa que no se usa.">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div className="rounded-[10px] bg-[#f5f5f5] p-6 flex flex-col gap-4">
-                <Label>Lo que usan las webs</Label>
-                <p className="text-[40px] md:text-[52px] leading-[1.05]" style={{ fontFamily: "Roboto, Arial, sans-serif" }}>
-                  Roboto · Arial
-                </p>
-                <p className="text-[14px] text-foreground/60">Las fuentes por defecto de Android y de Windows. 21 tamaños de letra distintos en la portada de Idiomas y 24 en la de FP.</p>
-              </div>
-              <div className="rounded-[10px] bg-[#f5f5f5] p-6 flex flex-col gap-4">
-                <Label>Lo que tiene la marca</Label>
-                <p className="text-[40px] md:text-[52px] leading-[1.05] tracking-[0.04em]" style={{ fontFamily: "'Trajan Pro', 'Cormorant Garamond', Georgia, serif" }}>
-                  NEBRIJA
-                </p>
-                <p className="text-[14px] text-foreground/60">Una serifa clásica en el logotipo, con carácter e historia. No se usa en ningún titular ni en ninguna pieza.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {FAMILIES.map((f) => (
+                <div key={f.name} className="rounded-[10px] bg-[#f5f5f5] p-6 flex flex-col gap-4">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <Label>{f.name}</Label>
+                    <span className="text-[13px] tabular-nums text-foreground/60">{f.uses} textos</span>
+                  </div>
+                  <p className="text-[72px] leading-[0.95]" style={{ fontFamily: f.css }}>Aa</p>
+                  <p className="text-[18px] leading-[1.3]" style={{ fontFamily: f.css }}>Universidad Nebrija</p>
+                  <p className="text-[14px] leading-[1.5] text-foreground/60">{f.note} En {f.where}.</p>
+                </div>
+              ))}
+              <div className="rounded-[10px] border-2 border-dashed border-[var(--chart)] p-6 flex flex-col gap-4">
+                <div className="flex items-baseline justify-between gap-4">
+                  <Label>La letra de la marca</Label>
+                  <span className="text-[13px] font-medium tabular-nums text-[var(--chart)]">0 textos</span>
+                </div>
+                <img src={`${IMG}/logo-nebrija.png`} width={648} height={252} alt="Logotipo de Universidad Nebrija con su serifa clásica" className="w-full max-w-[240px] h-auto mix-blend-multiply" />
+                <p className="text-[14px] leading-[1.5] text-foreground/60">La serifa clásica del logotipo, lo más reconocible de la identidad. No aparece en ningún titular, botón ni pieza de las webs.</p>
               </div>
             </div>
-            <Takeaway why="La tipografía es la voz de la marca. Con fuentes por defecto, Nebrija suena como cualquier plantilla." what="Una pareja tipográfica propia: una display que herede la serifa del logotipo y una sans de lectura, con una escala cerrada." />
+            <p className="text-[13px] text-foreground/50">Muestras en Roboto y en Arial; Arial MT Pro es una variante comercial de Arial.</p>
+
+            <div className="flex flex-col gap-5 pt-4">
+              <h3 className="font-display text-[22px] leading-[1.2] tracking-[-0.01em]">Todos los tamaños de cada portada</h3>
+              <Waterfall />
+            </div>
+
+            <div className="flex flex-col gap-5 pt-4">
+              <h3 className="font-display text-[22px] leading-[1.2] tracking-[-0.01em]">Pesos</h3>
+              <WeightStrip />
+            </div>
+
+            <Takeaway why="La tipografía es la voz de la marca. Con fuentes por defecto y tamaños sin escala, Nebrija suena como cualquier plantilla." what="Una pareja tipográfica propia: una display que herede la serifa del logotipo y una sans de lectura, con una escala cerrada de unos ocho tamaños y tres pesos." />
           </Section>
 
           <Section id="sistema" title="Sistema de diseño" lead="Un inventario que no cabe en ningún sistema.">
@@ -1029,7 +1110,7 @@ const NebrijaAudit = () => {
           </p>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
