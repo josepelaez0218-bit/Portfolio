@@ -507,9 +507,8 @@ const NebrijaAudit = () => {
 
       {/* Cover: a 12-column frame. Top line: what it is (left) and the
           ficha (right). Middle: the title (cols 1–8) against the lead and the
-          way in (cols 9–12, bottom-aligned). Base: four figures across the
-          full width, one per column group, in the chart colour. */}
-      <header className="px-3 pt-24 md:pt-28 pb-12 md:pb-16 flex flex-col gap-12 md:gap-16 lg:min-h-[calc(100svh-1rem)] lg:justify-between">
+          way in (cols 9–12, bottom-aligned). */}
+      <header className="px-3 pt-24 md:pt-28 pb-12 md:pb-16 flex flex-col gap-12 md:gap-16">
         <div className="grid grid-cols-2 lg:grid-cols-12 gap-x-6 lg:gap-x-10 gap-y-4 border-b border-foreground/15 pb-5">
           <p className="col-span-2 lg:col-span-6 text-[14px] text-foreground/60 tracking-[0.01em]">Auditoría de marca y presencia digital</p>
           <dl className="col-span-2 lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3">
@@ -547,31 +546,6 @@ const NebrijaAudit = () => {
           </div>
         </div>
 
-        <ul className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-foreground/15 border-y border-foreground/15">
-          {[
-            ["7", "versiones del logotipo", "logotipo"],
-            ["8", "tonos de rojo", "sistema"],
-            ["61", "tamaños de letra", "tipografia"],
-            ["19", "estilos de botón", "sistema"],
-          ].map(([n, l, to]) => (
-            <li key={l} className="bg-background [&:nth-child(odd)>a]:pl-0 lg:[&:nth-child(3)>a]:!pl-6">
-              <a
-                href={`#${to}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  go(to);
-                }}
-                className="group flex h-full flex-col gap-2 py-5 px-4 lg:px-6"
-              >
-                <span className="font-display font-normal leading-[0.9] tracking-[-0.03em] text-[clamp(3rem,6vw,6rem)] tabular-nums text-[var(--chart)]">{n}</span>
-                <span className="flex items-center justify-between gap-3 text-[14px] text-foreground/70">
-                  {l}
-                  <span aria-hidden="true" className="text-foreground/30 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-foreground">→</span>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 print:block">
