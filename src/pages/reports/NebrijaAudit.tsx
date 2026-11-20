@@ -24,6 +24,8 @@ import {
   TECH,
   UNITS,
   FAMILIES,
+  FUNNEL,
+  IMPACT,
   PRIORITY_LABEL,
   TYPE_SITES,
   WEIGHTS,
@@ -60,6 +62,7 @@ const SECTIONS = [
   { id: "redes", label: "Redes sociales" },
   { id: "fortalezas", label: "Lo que funciona" },
   { id: "propuesta", label: "Propuesta" },
+  { id: "impacto", label: "Impacto esperado" },
   { id: "siguiente", label: "Siguiente paso" },
 ] as const;
 
@@ -437,14 +440,14 @@ const NebrijaAudit = () => {
   const activeLabel = SECTIONS.find((s) => s.id === active)?.label ?? "";
 
   return (
-    // Platypi in this report only: Light (300), so the serif leads stay
+    // Platypi in this report only: Light Italic, so the serif leads stay
     // quieter than the section titles. The rest of the site keeps 400.
-    <div className="[&_.text-lead]:!font-light" style={{ "--chart": "#2B4CFF", "--chart-mid": "#8FA2FF", "--chart-soft": "#DCE3FF" } as React.CSSProperties}>
+    <div className="[&_.text-lead]:!font-light [&_.text-lead]:italic" style={{ "--chart": "#2B4CFF", "--chart-mid": "#8FA2FF", "--chart-soft": "#DCE3FF" } as React.CSSProperties}>
       <Helmet>
         <html lang="es" />
         <title>Auditoría de marca · Universidad Nebrija — Jose Peláez</title>
         <meta name="robots" content="noindex, nofollow, noarchive" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Platypi:ital,wght@1,300&family=Roboto:wght@100;300;400;500;700;900&display=swap" />
         <meta name="description" content="Auditoría de la marca y la presencia digital de la Universidad Nebrija, por Jose Peláez." />
         <meta property="og:title" content="Auditoría de marca · Universidad Nebrija" />
         <meta property="og:description" content="Web, institutos y redes: qué no encaja, por qué importa y cómo construir una marca a la altura de sus datos." />
@@ -1019,6 +1022,80 @@ const NebrijaAudit = () => {
                 ))}
               </ul>
             </div>
+          </Section>
+
+          <Section id="impacto" title="Impacto esperado" lead="Más solicitudes desde la misma web: qué mejora cada acción.">
+            <Body>
+              Cada paso del embudo pierde candidatos. Las cifras siguientes son de estudios publicados, no una previsión para Nebrija: sirven para dimensionar lo que está en juego. La fase de diagnóstico fijaría la línea de partida con vuestros datos y mediría cada mejora.
+            </Body>
+            <figure className="flex flex-col gap-3">
+              <ol className="flex flex-col gap-1.5">
+                {FUNNEL.map((f, i) => (
+                  <li key={f.step} className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 md:gap-6 items-center">
+                    <div
+                      className="rounded-[6px] px-5 py-4 flex flex-col gap-0.5"
+                      style={{
+                        width: `${100 - i * 14}%`,
+                        background: `color-mix(in srgb, var(--chart) ${[22, 42, 72, 100][i]}%, white)`,
+                        color: i < 2 ? "#16171A" : "white",
+                      }}
+                    >
+                      <span className="text-[12px] tabular-nums opacity-80">Paso {i + 1}</span>
+                      <span className="text-[17px] font-medium leading-[1.2]">{f.step}</span>
+                      <span className="text-[13px] opacity-90">{f.question}</span>
+                    </div>
+                    <ul className="flex flex-wrap gap-1.5">
+                      {f.actions.map((a) => (
+                        <li key={a.text}>
+                          <a
+                            href={`#${a.to}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              go(a.to);
+                            }}
+                            className="inline-flex items-center gap-2 rounded-full border border-foreground/15 px-3 py-1.5 text-[13px] text-foreground/80 hover:border-foreground hover:text-foreground transition-colors duration-300"
+                          >
+                            {a.text} <span aria-hidden="true" className="text-foreground/40">→</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ol>
+              <figcaption className="text-[14px] text-foreground/60 max-w-[62ch]">
+                El embudo de captación y las acciones de este informe que mejoran cada paso. La forma es ilustrativa: con los datos de analítica se pondría la cifra real de cada paso.
+              </figcaption>
+            </figure>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {IMPACT.map((it) => (
+                <li key={it.action} className="rounded-[10px] bg-[#f5f5f5] p-6 flex flex-col gap-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[13px] font-medium text-foreground/60">{it.improves}</span>
+                    <PriorityTag p={it.priority} short />
+                  </div>
+                  <span className="font-display font-normal leading-[0.95] tracking-[-0.03em] text-[clamp(2.75rem,5vw,4.5rem)] tabular-nums text-[var(--chart)]">{it.figure}</span>
+                  <p className="text-[15px] leading-[1.55] text-foreground/80">{it.claim}</p>
+                  <div className="mt-auto flex flex-col gap-3 border-t border-foreground/10 pt-4">
+                    <a
+                      href={`#${it.to}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        go(it.to);
+                      }}
+                      className="group flex items-start justify-between gap-3 text-[15px] font-medium text-foreground"
+                    >
+                      {it.action}
+                      <span aria-hidden="true" className="text-foreground/40 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-foreground">→</span>
+                    </a>
+                    <span className="text-[13px] text-foreground/60">Se mide con: {it.measure}</span>
+                    <a href={it.url} target="_blank" rel="noopener noreferrer" className="text-[12px] text-foreground/50 underline underline-offset-2 decoration-foreground/20 hover:text-foreground">
+                      Fuente: {it.source}
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </Section>
 
           <Section id="siguiente" title="Siguiente paso" lead="Completar el diagnóstico con los datos internos.">
