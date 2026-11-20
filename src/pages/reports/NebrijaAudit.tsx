@@ -1028,23 +1028,21 @@ const NebrijaAudit = () => {
             <Body>
               Cada paso del embudo pierde candidatos. Las cifras siguientes son de estudios publicados, no una previsión para Nebrija: sirven para dimensionar lo que está en juego. La fase de diagnóstico fijaría la línea de partida con vuestros datos y mediría cada mejora.
             </Body>
-            <figure className="flex flex-col gap-3">
-              <ol className="flex flex-col gap-1.5">
+            <figure className="flex flex-col gap-4">
+              {/* The admissions journey: four steps on one line (a timeline with
+                  a dot per step), the actions that move each step underneath */}
+              <ol className="grid grid-cols-1 md:grid-cols-4 border-y border-foreground/15">
                 {FUNNEL.map((f, i) => (
-                  <li key={f.step} className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 md:gap-6 items-center">
-                    <div
-                      className="rounded-[6px] px-5 py-4 flex flex-col gap-0.5"
-                      style={{
-                        width: `${100 - i * 14}%`,
-                        background: `color-mix(in srgb, var(--chart) ${[22, 42, 72, 100][i]}%, white)`,
-                        color: i < 2 ? "#16171A" : "white",
-                      }}
-                    >
-                      <span className="text-[12px] tabular-nums opacity-80">Paso {i + 1}</span>
-                      <span className="text-[17px] font-medium leading-[1.2]">{f.step}</span>
-                      <span className="text-[13px] opacity-90">{f.question}</span>
+                  <li key={f.step} className={`relative flex flex-col gap-4 py-6 md:px-5 md:first:pl-0 ${i > 0 ? "border-t md:border-t-0 md:border-l border-foreground/15" : ""}`}>
+                    <div className="flex items-center gap-3">
+                      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-foreground text-[12px] font-medium text-background tabular-nums">{i + 1}</span>
+                      {i < FUNNEL.length - 1 && <span aria-hidden="true" className="hidden md:block h-px flex-1 bg-foreground/20" />}
                     </div>
-                    <ul className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-display text-[22px] leading-[1.15] tracking-[-0.01em]">{f.step}</span>
+                      <span className="text-[14px] leading-[1.45] text-foreground/60">{f.question}</span>
+                    </div>
+                    <ul className="flex flex-col gap-2 border-t border-foreground/10 pt-4">
                       {f.actions.map((a) => (
                         <li key={a.text}>
                           <a
@@ -1053,9 +1051,10 @@ const NebrijaAudit = () => {
                               e.preventDefault();
                               go(a.to);
                             }}
-                            className="inline-flex items-center gap-2 rounded-full border border-foreground/15 px-3 py-1.5 text-[13px] text-foreground/80 hover:border-foreground hover:text-foreground transition-colors duration-300"
+                            className="group flex items-start justify-between gap-3 text-[14px] leading-[1.45] text-foreground/80 hover:text-foreground"
                           >
-                            {a.text} <span aria-hidden="true" className="text-foreground/40">→</span>
+                            {a.text}
+                            <span aria-hidden="true" className="text-foreground/30 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-foreground">→</span>
                           </a>
                         </li>
                       ))}
@@ -1064,7 +1063,7 @@ const NebrijaAudit = () => {
                 ))}
               </ol>
               <figcaption className="text-[14px] text-foreground/60 max-w-[62ch]">
-                El embudo de captación y las acciones de este informe que mejoran cada paso. La forma es ilustrativa: con los datos de analítica se pondría la cifra real de cada paso.
+                El recorrido de un futuro estudiante hasta pedir información, y las acciones de este informe que mejoran cada paso. Con los datos de analítica se pondría la cifra real de cada uno.
               </figcaption>
             </figure>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
