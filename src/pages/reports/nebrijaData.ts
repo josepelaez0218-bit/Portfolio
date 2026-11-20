@@ -238,6 +238,7 @@ export const IMPACT: {
   priority: Priority;
   improves: string;
   figure: string;
+  unit: string;
   claim: string;
   source: string;
   url: string;
@@ -249,7 +250,8 @@ export const IMPACT: {
     priority: 1,
     improves: "Conversión",
     figure: "+8,4 %",
-    claim: "más conversiones con solo una décima de segundo menos de carga en móvil (sector retail; +10,1 % en viajes).",
+    unit: "de conversiones",
+    claim: "con solo una décima de segundo menos de carga en el móvil (sector retail; +10,1 % en viajes).",
     source: "Deloitte y Google, Milliseconds Make Millions, 2020",
     url: "https://www.deloitte.com/ie/en/services/consulting/research/milliseconds-make-millions.html",
     measure: "Conversión a solicitud de información desde móvil",
@@ -260,7 +262,8 @@ export const IMPACT: {
     priority: 1,
     improves: "Conversión · quedarse",
     figure: "+32 %",
-    claim: "sube la probabilidad de que un visitante abandone cuando la carga pasa de 1 a 3 segundos.",
+    unit: "de abandono",
+    claim: "si la página tarda 3 segundos en cargar en lugar de 1. Aligerar la portada evita perder esas visitas antes de que lleguen a ver nada.",
     source: "Google / SOASTA, 2017",
     url: "https://thinkwithgoogle.com/intl/en-gb/mobile-page-speed-data",
     measure: "Tasa de rebote en móvil, tiempo de carga",
@@ -271,7 +274,8 @@ export const IMPACT: {
     priority: 1,
     improves: "Conversión · convencer",
     figure: "64 %",
-    claim: "de los estudiantes de último curso usa la web de la universidad como su principal fuente de información, por delante de buscadores y familia.",
+    unit: "de los estudiantes",
+    claim: "de último curso usa la web de la universidad como su principal fuente de información, por delante de buscadores y familia.",
     source: "Carnegie Higher Ed, encuesta a 3.400 estudiantes y familias, 2025",
     url: "https://www.carnegiehighered.com/research-series-what-drives-college-choice/",
     measure: "Solicitudes de información por visita, clics hacia admisión",
@@ -282,7 +286,8 @@ export const IMPACT: {
     priority: 1,
     improves: "Conversión · confianza",
     figure: "+10–33 %",
-    claim: "más ingresos declaran las organizaciones que presentan su marca de forma consistente en todos los canales.",
+    unit: "de ingresos",
+    claim: "declaran las organizaciones que presentan su marca de forma consistente en todos los canales.",
     source: "Lucidpress (Marq), State of Brand Consistency, 2019 y 2021",
     url: "https://prnewswire.com/news-releases/study-finds-companies-with-consistent-branding-can-see-up-to-33-increase-in-revenue-300967219.html",
     measure: "Búsquedas de marca, recuerdo de marca en encuestas a candidatos",
@@ -293,7 +298,8 @@ export const IMPACT: {
     priority: 2,
     improves: "Captación · llegar",
     figure: "+6 %",
-    claim: "más clics reciben los resultados de búsqueda con meta descripción frente a los que no la tienen.",
+    unit: "de clics",
+    claim: "reciben los resultados de Google con meta descripción frente a los que no la tienen.",
     source: "Backlinko y ClickFlow, análisis de 5 millones de resultados, 2019",
     url: "https://www.newswire.com/news/the-1-result-in-google-gets-31-7-of-clicks-new-study-by-backlinko-and-20976010",
     measure: "CTR orgánico en Google Search Console",
@@ -304,7 +310,8 @@ export const IMPACT: {
     priority: 2,
     improves: "Captación · llegar",
     figure: "60 %",
-    claim: "de las imágenes de la ficha de grado de Nebrija no tienen texto alternativo, frente al 18,5 % de media en el millón de webs más visitadas.",
+    unit: "sin texto alternativo",
+    claim: "de las imágenes de la ficha de grado de Nebrija, frente al 18,5 % de media en el millón de webs más visitadas.",
     source: "WebAIM Million, 2025 (media); medición propia (Nebrija)",
     url: "https://webaim.org/projects/million/2025",
     measure: "Errores WCAG, tráfico desde Google Imágenes",

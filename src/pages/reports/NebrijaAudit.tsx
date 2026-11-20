@@ -1073,7 +1073,10 @@ const NebrijaAudit = () => {
                     <span className="text-[13px] font-medium text-foreground/60">{it.improves}</span>
                     <PriorityTag p={it.priority} short />
                   </div>
-                  <span className="font-display font-normal leading-[0.95] tracking-[-0.03em] text-[clamp(2.75rem,5vw,4.5rem)] tabular-nums text-[var(--chart)]">{it.figure}</span>
+                  <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="font-display font-normal leading-[0.95] tracking-[-0.03em] text-[clamp(2.75rem,5vw,4.5rem)] tabular-nums text-[var(--chart)]">{it.figure}</span>
+                    <span className="font-display text-[20px] md:text-[24px] leading-[1.1] tracking-[-0.01em] text-[var(--chart)]">{it.unit}</span>
+                  </span>
                   <p className="text-[15px] leading-[1.55] text-foreground/80">{it.claim}</p>
                   <div className="mt-auto flex flex-col gap-3 border-t border-foreground/10 pt-4">
                     <a
