@@ -344,7 +344,7 @@ const Waterfall = () => {
             type="button"
             aria-selected={t.id === id}
             onClick={() => setId(t.id)}
-            className={`rounded-full px-4 py-2 text-[14px] tracking-[0.01em] transition-colors duration-300 ${t.id === id ? "bg-[var(--chart)] text-white" : "bg-[#f5f5f5] text-foreground/70 hover:text-foreground"}`}
+            className={`rounded-full px-4 py-2 text-[14px] tracking-[0.01em] transition-colors duration-300 ${t.id === id ? "bg-foreground text-background" : "bg-[#f5f5f5] text-foreground/70 hover:text-foreground"}`}
           >
             {t.site} <span className="tabular-nums opacity-70">· {t.sizes.length}</span>
           </button>
@@ -356,7 +356,7 @@ const Waterfall = () => {
         {!site.ideal && <span><span className="font-medium text-foreground tabular-nums">{once}</span> usados una sola vez</span>}
         <span>Familia: <span className="font-medium text-foreground">{site.family}</span></span>
       </div>
-      <div className="rounded-[10px] border border-foreground/10 overflow-hidden">
+      <div className="rounded-[4px] border border-foreground/10 overflow-hidden">
         {site.sizes.map(([size, n]) => (
           <div key={size} className="grid grid-cols-[4.5rem_1fr] md:grid-cols-[5rem_1fr_9rem] items-center gap-x-4 border-t border-foreground/10 first:border-t-0 px-4 py-2">
             <span className={`text-[13px] tabular-nums ${Number.isInteger(size) ? "text-foreground/60" : "text-[#A15C07] font-medium"}`}>{String(size).replace(".", ",")} px</span>
@@ -387,7 +387,7 @@ const WeightStrip = () => (
   <figure className="flex flex-col gap-3">
     <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
       {WEIGHTS.map((w) => (
-        <div key={w} className="rounded-[10px] bg-[#f5f5f5] px-4 py-5 flex flex-col gap-2">
+        <div key={w} className="rounded-[4px] bg-[#f5f5f5] px-4 py-5 flex flex-col gap-2">
           <span className="text-[44px] leading-none" style={{ fontFamily: "Roboto, sans-serif", fontWeight: w }}>Aa</span>
           <span className="text-[13px] tabular-nums text-foreground/60">{w}</span>
         </div>
@@ -607,7 +607,7 @@ const NebrijaAudit = () => {
                 <li key={t} className="bg-background py-6 md:px-6 md:first:pl-0 flex flex-col gap-3">
                   <span className="text-[14px] text-foreground/60 tabular-nums">{i + 1}</span>
                   <p className="font-display text-[22px] leading-[1.2] tracking-[-0.01em]">{t}</p>
-                  <p className="text-[15px] leading-[1.55] text-foreground/70">{d}</p>
+                  <p className="text-[14px] leading-[1.55] text-foreground/70">{d}</p>
                 </li>
               ))}
             </ol>
@@ -689,7 +689,7 @@ const NebrijaAudit = () => {
           <Section id="color" title="Color" lead="Tres rojos principales para un solo color de marca.">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {REDS.map((r) => (
-                <div key={r.hex} className="flex flex-col overflow-hidden rounded-[10px] border border-foreground/10">
+                <div key={r.hex} className="flex flex-col overflow-hidden rounded-[4px] border border-foreground/10">
                   <div className="h-28 md:h-36" style={{ background: r.hex }} />
                   <div className="px-4 py-3 flex flex-col gap-0.5">
                     <code className="font-mono text-[14px]">{r.hex}</code>
@@ -707,7 +707,7 @@ const NebrijaAudit = () => {
           <Section id="tipografia" title="Tipografía" lead="Fuentes por defecto y una serifa que no se usa.">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {FAMILIES.map((f) => (
-                <div key={f.name} className="rounded-[10px] bg-[#f5f5f5] p-6 flex flex-col gap-4">
+                <div key={f.name} className="rounded-[4px] bg-[#f5f5f5] p-5 flex flex-col gap-4">
                   <div className="flex items-baseline justify-between gap-4">
                     <Label>{f.name}</Label>
                     <span className="text-[13px] tabular-nums text-foreground/60">{f.uses} textos</span>
@@ -717,10 +717,10 @@ const NebrijaAudit = () => {
                   <p className="text-[14px] leading-[1.5] text-foreground/60">{f.note} En {f.where}.</p>
                 </div>
               ))}
-              <div className="rounded-[10px] border-2 border-dashed border-[var(--chart)] p-6 flex flex-col gap-4">
+              <div className="rounded-[4px] border border-dashed border-foreground/30 p-5 flex flex-col gap-4">
                 <div className="flex items-baseline justify-between gap-4">
                   <Label>La letra de la marca</Label>
-                  <span className="text-[13px] font-medium tabular-nums text-[var(--chart)]">0 textos</span>
+                  <span className="text-[13px] font-medium tabular-nums text-foreground">0 textos</span>
                 </div>
                 <img src={`${IMG}/logo-nebrija.png`} width={648} height={252} alt="Logotipo de Universidad Nebrija con su serifa clásica" className="w-full max-w-[240px] h-auto mix-blend-multiply" />
                 <p className="text-[14px] leading-[1.5] text-foreground/60">La serifa clásica del logotipo, lo más reconocible de la identidad. No aparece en ningún titular, botón ni pieza de las webs.</p>
@@ -748,7 +748,7 @@ const NebrijaAudit = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {DS_STATS.map((f) => (
                 <div key={f.label} className="rounded-[4px] bg-[#f5f5f5] px-5 py-5 flex flex-col gap-1.5">
-                  <span className="font-display font-normal leading-[1] tracking-[-0.02em] text-[32px] md:text-[44px] tabular-nums">{f.value}</span>
+                  <span className="font-display font-normal leading-[1] tracking-[-0.02em] text-[32px] md:text-[40px] tabular-nums">{f.value}</span>
                   <span className="text-[14px] text-foreground/60">{f.label}</span>
                 </div>
               ))}
@@ -864,7 +864,7 @@ const NebrijaAudit = () => {
             <Body>
               La mayoría de futuros estudiantes llega desde el móvil. En un iPhone 13 la portada de nebrija.com mide unos 21.700 px y la de FP, unas 23 pantallas.
             </Body>
-            <div className="flex flex-col gap-5 rounded-[10px] bg-[#f5f5f5] p-5 md:p-8">
+            <div className="flex flex-col gap-5 rounded-[4px] bg-[#f5f5f5] p-5 md:p-8">
               <Screens n={26} label="portada de nebrija.com" />
               <Screens n={23} label="portada de fpnebrija.com" />
               <Screens n={6} label="una portada de móvil razonable" light />
@@ -896,9 +896,9 @@ const NebrijaAudit = () => {
                 ["Rendimiento", "La portada carga unos 17 MB, entre seis y diez veces más que el resto de páginas."],
                 ["Revisión", "La página de postgrados enlaza a un dominio interno de desarrollo, señal de que no hay revisión antes de publicar."],
               ].map(([t, d]) => (
-                <li key={t} className="rounded-[10px] bg-[#f5f5f5] p-5 flex flex-col gap-2">
+                <li key={t} className="rounded-[4px] bg-[#f5f5f5] p-5 flex flex-col gap-2">
                   <span className="text-[16px] font-medium">{t}</span>
-                  <span className="text-[15px] leading-[1.55] text-foreground/70">{d}</span>
+                  <span className="text-[14px] leading-[1.55] text-foreground/70">{d}</span>
                 </li>
               ))}
             </ul>
@@ -999,9 +999,9 @@ const NebrijaAudit = () => {
                 ["La presentación institucional", "Cuenta los datos con jerarquía, un rojo coherente y buen ritmo."],
                 ["Contenido abundante", "No falta material; falta un sistema que lo ordene."],
               ].map(([t, d]) => (
-                <div key={t} className="rounded-[10px] bg-[#f5f5f5] p-5 flex flex-col gap-2">
+                <div key={t} className="rounded-[4px] bg-[#f5f5f5] p-5 flex flex-col gap-2">
                   <span className="text-[16px] font-medium">{t}</span>
-                  <span className="text-[15px] leading-[1.55] text-foreground/70">{d}</span>
+                  <span className="text-[14px] leading-[1.55] text-foreground/70">{d}</span>
                 </div>
               ))}
             </div>
@@ -1025,7 +1025,7 @@ const NebrijaAudit = () => {
               <Label>Mejoras rápidas, antes del rediseño</Label>
               <ul className="grid gap-2 md:grid-cols-2">
                 {QUICK_WINS_TAGGED.map((q) => (
-                  <li key={q.text} className="flex flex-col gap-3 rounded-[10px] border border-foreground/10 p-5">
+                  <li key={q.text} className="flex flex-col gap-3 rounded-[4px] border border-foreground/10 p-5">
                     <div className="flex flex-wrap gap-1.5">
                       <PriorityTag p={q.priority} />
                       <Tag>{q.effort}</Tag>
@@ -1081,37 +1081,36 @@ const NebrijaAudit = () => {
             </figure>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {IMPACT.map((it) => (
-                <li key={it.action} className="rounded-[10px] bg-[#f5f5f5] p-6 flex flex-col gap-4">
+                <li key={it.action} className="rounded-[4px] bg-[#f5f5f5] px-5 py-5 flex flex-col gap-5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-[13px] font-medium text-foreground/60">{it.improves}</span>
+                    <span className="text-[13px] text-foreground/60">{it.improves}</span>
                     <PriorityTag p={it.priority} short />
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[13px] text-foreground/60">Margen de mejora estimado</span>
-                    <span className="font-display font-normal leading-[0.95] tracking-[-0.03em] text-[clamp(2.75rem,5vw,4.5rem)] tabular-nums text-[var(--chart)]">{it.gain}</span>
-                    <span className="font-display text-[20px] leading-[1.2] tracking-[-0.01em] text-[var(--chart)]">{it.unit}</span>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="font-display font-normal leading-[1] tracking-[-0.02em] text-[32px] md:text-[40px] tabular-nums">{it.gain}</span>
+                    <span className="text-[14px] text-foreground/60">{it.unit}</span>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[13px] font-medium text-foreground">Cómo lo calculamos</span>
+                  <div className="flex flex-col gap-2 border-t border-foreground/10 pt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[14px] font-medium text-foreground">Cómo lo calculamos</span>
                       <ConfidenceTag c={it.confidence} />
                     </div>
                     <p className="text-[14px] leading-[1.55] text-foreground/70">{it.basis}</p>
                   </div>
-                  <div className="mt-auto flex flex-col gap-3 border-t border-foreground/10 pt-4">
+                  <div className="mt-auto flex flex-col gap-2 border-t border-foreground/10 pt-4">
                     <a
                       href={`#${it.to}`}
                       onClick={(e) => {
                         e.preventDefault();
                         go(it.to);
                       }}
-                      className="group flex items-start justify-between gap-3 text-[15px] font-medium text-foreground"
+                      className="group flex items-start justify-between gap-3 text-[16px] font-medium text-foreground"
                     >
                       {it.action}
                       <span aria-hidden="true" className="text-foreground/40 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-foreground">→</span>
                     </a>
-                    <span className="text-[13px] text-foreground/60">Se mide con: {it.measure}</span>
-                    <a href={it.url} target="_blank" rel="noopener noreferrer" className="text-[12px] text-foreground/50 underline underline-offset-2 decoration-foreground/20 hover:text-foreground">
+                    <span className="text-[13px] text-foreground/50">Se mide con: {it.measure}</span>
+                    <a href={it.url} target="_blank" rel="noopener noreferrer" className="text-[13px] text-foreground/50 underline underline-offset-2 decoration-foreground/20 hover:text-foreground">
                       Fuente: {it.source}
                     </a>
                   </div>
@@ -1129,7 +1128,7 @@ const NebrijaAudit = () => {
                 </li>
               ))}
             </ul>
-            <div className="rounded-[10px] bg-foreground text-background p-8 md:p-12 flex flex-col gap-6">
+            <div className="rounded-[4px] bg-foreground text-background p-8 md:p-12 flex flex-col gap-6">
               <p className="text-lead max-w-[30ch]">¿Lo vemos juntos? Una conversación de 30 minutos basta para empezar.</p>
               <div className="flex flex-wrap items-center gap-4">
                 <a
